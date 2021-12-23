@@ -11,8 +11,8 @@ fn test(a: usize, b: usize) -> PyResult<String> {
 /// the `lib.name` setting in the `Cargo.toml`, else Python will not be able to
 /// import the module.
 #[pymodule]
-fn hello_rust(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+fn rust_neat(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(test, m)?)?;
 
     Ok(())
 }
