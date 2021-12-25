@@ -14,21 +14,21 @@ pub struct Link {
 
 impl fmt::Display for Link { 
     // Allows us to print the Link with the default formatter 
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    pub fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, " {} -- {} --> {} ", self.src, self.weight, self.dst)
     }
 }
 
 impl Link {
-    fn get_weight(&self) -> f64 {
+    pub fn get_weight(&self) -> f64 {
         self.weight 
     }
         
-    fn get_src(&self) -> Node {
+    pub fn get_src(&self) -> Node {
         self.src
     }
 
-    fn get_dst(&self) -> Node {
+    pub fn get_dst(&self) -> Node {
         self.dst
     }
 }
