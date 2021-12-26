@@ -45,8 +45,8 @@ impl Node {
             label, 
             pred,
             succ, 
-            input: 0,
-            output: 0   
+            input: 0.0,
+            output: 0.0   
         }
     }
 
@@ -74,25 +74,25 @@ impl Node {
     /// Returns a reference to the vector of successors of the node
     pub fn get_succ(&self) -> &Vec<&Node> { &self.succ }
 
-    pub fn get_input(&self) -> f64 { &self.input }
+    pub fn get_input(&self) -> f64 { self.input }
 
-    pub fn get_output(&self) -> f64 { &self.output }
+    pub fn get_output(&self) -> f64 { self.output }
     
     /// ...... and returns the input
-    pub fn update_input(&mut self) -> f64 {
-        // TODO
-    }
+    // pub fn update_input(&mut self) -> f64 {
+    //     // TODO
+    // }
 
     /// ...... and returns the output    
-    pub fn update_output(&mut self) -> f64 {
-        // TODO
-    }
+    // pub fn update_output(&mut self) -> f64 {
+    //     // TODO
+    // }
 
 
     pub fn delete_pred(&mut self, pred: &Self) -> bool {
         for (index, &p) in self.pred.iter().enumerate() {
             if p == pred {
-                self.pred.swap_remove(index)
+                self.pred.swap_remove(index);
                 return true
             }
         }
