@@ -1,6 +1,6 @@
 use std::fmt;
 
-mod node;
+// mod node;
 use node::Node;
 
 /// ### Defines a directional Link in the neural network
@@ -18,12 +18,24 @@ pub struct Link<'a>{
     pub dst: &'a Node, 
     pub weight: f64, 
     
+}
+
 /// Allows us to print the Link with the default formatter 
 impl<'a> fmt::Display for Link<'a> { 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, " {} -- {} --> {} ", self.src, self.weight, self.dst)
     }
 }
+
+impl<'a> PartialEq for Link<'a> {
+    // Defines equality operation between links
+    fn eq(&self, other: &Self) -> bool {
+        self.src == other.src && self.dst == other.dst && self.weight == other.weight
+    }
+}
+
+impl Eq for Link<'a> {} // Do not remove
+
 
 impl<'a> Link<'a> {
 
