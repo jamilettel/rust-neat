@@ -3,17 +3,28 @@ use std::fmt;
 
 // enum NodeType {}
 
+/// ### Defines a node in the Neural Network
+/// 
+/// Attributes :
+/// 
+/// - **id** 
+/// - **label** (public)
+/// - **pred** : list of predecessors
+/// - **succ** : list of successors
+/// - **input** : input value of the Node
+/// - **output** : output value of the Node
+/// 
 pub struct Node {
     id: u32,
-    label: String,
+    pub label: String,
     // All nodes x such that the link x --> self exists
-    pred: Vec<&'static Node>, // List of references to the predecessors of the Node, 
+    pred: Vec<&'static Node>,  
     
     // All nodes x such that the link self --> x exists
-    succ: Vec<&'static Node>,// List of references to the successors of the Node, 
+    succ: Vec<&'static Node>, 
     
-    input : f64, // input value of the node 
-    output : f64, // output value of the node
+    input : f64,  
+    output : f64,
     
     // node_type : If useful we can crete an Enum for Input, Output,  
     
@@ -99,7 +110,18 @@ impl Node {
         false
     }
 
+    pub fn delete_succ(&mut self, succ: &Self) -> bool {
+        for (index, &p) in self.succ.iter().enumerate() {
+            if p == succ {
+                self.succ.swap_remove(index);
+                return true
+            }
+        }
+        false
+    }
 
-    // TODO :  delete_succ, clone, update_input, update_output, drop
+
+
+    // TODO : clone, update_input, update_output, drop
     
 }
