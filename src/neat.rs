@@ -1,6 +1,10 @@
 use pyo3::prelude::*;
 use std::fmt;
 
+// mod gene;
+// mod link;
+
+
 #[pyclass]
 pub struct NEAT {
     pub pop_size: i32,

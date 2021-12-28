@@ -1,106 +1,100 @@
 use std::fmt;
 
+use crate::Link;
 
 // enum NodeType {}
-
 /// ### Defines a node in the Neural Network
-/// 
+///
 /// Attributes :
-/// 
-/// - **id** 
+///
+/// - **id**
 /// - **label** (public)
 /// - **pred** : list of predecessors
 /// - **succ** : list of successors
 /// - **input** : input value of the Node
 /// - **output** : output value of the Node
-/// 
-pub struct Node {
+///
+pub struct Node<'a> {
     id: u32,
     pub label: String,
     // All nodes x such that the link x --> self exists
-    pred: Vec<&'static Node>,  
-    
+    pred: Vec<&'a Link<'a>>,
+
     // All nodes x such that the link self --> x exists
-    succ: Vec<&'static Node>, 
-    
-    input : f64,  
+    succ: Vec<&'a Link<'a>>,
+
+    input : f64,
     output : f64,
-    
-    // node_type : If useful we can crete an Enum for Input, Output,  
-    
+
+    // node_type : If useful we can crete an Enum for Input, Output,
+
 }
 
 
-impl fmt::Display for Node { 
-    // Allows us to print the Node with the default formatter 
+impl<'a> fmt::Display for Node<'a> {
+    // Allows us to print the Node with the default formatter
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Node {} : {} ", self.id, self.label)
     }
 }
 
-impl PartialEq for Node {
+impl<'a> PartialEq for Node<'a> {
     // Defines equality operation between nodes
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id && self.label == other.label
     }
 }
 
-impl Eq for Node {} // Do not remove
+impl<'a> Eq for Node<'a> {} // Do not remove
 
 
-impl Node {
+impl<'a> Node<'a> {
 
-    pub fn new(id: u32, label: String, pred: Vec<&'static Node>, succ: Vec<&'static Node>) -> Node {
-        return Node { 
-            id, 
-            label, 
+    pub fn new(id: u32, label: String, pred: Vec<&'a Link<'a>>, succ: Vec<&'a Link<'a>>) -> Self {
+        return Node {
+            id,
+            label,
             pred,
-            succ, 
+            succ,
             input: 0.0,
-            output: 0.0   
+            output: 0.0
         }
     }
 
     /// Adds a new predecessor, returns true if successful false otherwise
-    pub fn add_pred(&mut self, new_pred: &'static Self) -> bool {
-        if ! (self.pred.contains(&new_pred) || self.succ.contains(&new_pred)) {
-            self.pred.push(new_pred);
-            return true;
-        }
-        false
-    }
-    
-    /// Adds a new successor, returns true if successful false otherwise
-    pub fn add_succ(&mut self, new_succ: &'static Self) -> bool {
-        if ! (self.pred.contains(&new_succ) || self.succ.contains(&new_succ)) {
-            self.succ.push(new_succ);
-            return true;
-        }
-        false
+    pub fn add_pred(&mut self, new_pred: &'a Link) -> bool {
+        self.pred.push(new_pred);
+        true
     }
 
-    /// Returns a reference to the vector of predecessors of the node 
-    pub fn get_pred(&self) -> &Vec<&Node> { &self.pred }
+    /// Adds a new successor, returns true if successful false otherwise
+    pub fn add_succ(&mut self, new_succ: &'a Link) -> bool {
+        self.succ.push(new_succ);
+        true
+    }
+
+    /// Returns a reference to the vector of predecessors of the node
+    pub fn get_pred(&self) -> &Vec<&'a Link> { &self.pred }
 
     /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<&Node> { &self.succ }
+    pub fn get_succ(&self) -> &Vec<&'a Link> { &self.succ }
 
     pub fn get_input(&self) -> f64 { self.input }
 
     pub fn get_output(&self) -> f64 { self.output }
-    
+
     /// ...... and returns the input
     // pub fn update_input(&mut self) -> f64 {
     //     // TODO
     // }
 
-    /// ...... and returns the output    
+    /// ...... and returns the output
     // pub fn update_output(&mut self) -> f64 {
     //     // TODO
     // }
 
 
-    pub fn delete_pred(&mut self, pred: &Self) -> bool {
+    pub fn delete_pred(&mut self, pred: &'a Link) -> bool {
         for (index, &p) in self.pred.iter().enumerate() {
             if p == pred {
                 self.pred.swap_remove(index);
@@ -110,7 +104,7 @@ impl Node {
         false
     }
 
-    pub fn delete_succ(&mut self, succ: &Self) -> bool {
+    pub fn delete_succ(&mut self, succ: &'a Link) -> bool {
         for (index, &p) in self.succ.iter().enumerate() {
             if p == succ {
                 self.succ.swap_remove(index);
@@ -120,8 +114,6 @@ impl Node {
         false
     }
 
-
-
     // TODO : clone, update_input, update_output, drop
-    
+
 }
