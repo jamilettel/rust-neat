@@ -22,8 +22,7 @@ pub struct Node<'a> {
     /// All nodes x such that the link self --> x exists
     succ: Vec<&'a Link<'a>>,
 
-    pub input: f64,
-    pub output: f64,
+    pub value: f64,
 
     pub layer: i32,
 }
@@ -55,8 +54,7 @@ impl<'a> Node<'a> {
             id,
             pred,
             succ,
-            input: 0.0,
-            output: 0.0,
+            value: 0.0,
             layer: layer.unwrap_or(0),
         };
     }

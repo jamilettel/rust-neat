@@ -31,6 +31,7 @@ impl<'a> Network<'a> {
         todo!();
     }
 
+    /// Computes the outputs using the network's inputs
     pub fn compute() {
         todo!();
     }

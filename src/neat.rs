@@ -1,5 +1,5 @@
 mod neat;
-pub use neat::NEAT;
+pub use neat::NEATPyWrapper;
 
 mod gene;
 pub use gene::Gene;
