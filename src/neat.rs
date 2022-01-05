@@ -1,29 +1,14 @@
-use pyo3::prelude::*;
-use std::fmt;
+mod neat;
+pub use neat::NEAT;
 
-// mod gene;
-// mod link;
+mod gene;
+pub use gene::Gene;
 
-#[pyclass]
-pub struct NEAT {
-    pub pop_size: i32,
-}
+mod link;
+pub use link::Link;
 
-impl fmt::Display for NEAT {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self)
-    }
-}
+mod network;
+pub use network::Network;
 
-#[pymethods]
-impl NEAT {
-    #[new]
-    #[args(pop_size, test = 1)]
-    pub fn new(pop_size: i32) -> Self {
-        NEAT { pop_size }
-    }
-
-    fn __str__(&self) -> String {
-        format!("[NEAT: {{pop_size: {}}}]", self.pop_size)
-    }
-}
+mod node;
+pub use node::Node;

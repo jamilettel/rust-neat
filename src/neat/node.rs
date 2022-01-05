@@ -1,18 +1,19 @@
 use std::fmt;
 
-use crate::Link;
+use crate::neat::Link;
 
-/// ### Defines a node in the Neural Network
-///
-/// Attributes :
-///
-/// - **id**
-/// - **label** (public)
-/// - **pred** : list of predecessors
-/// - **succ** : list of successors
-/// - **input** : input value of the Node
-/// - **output** : output value of the Node
-///
+/**
+### Defines a node in the Neural Network
+
+Attributes :
+
+- **id**
+- **label** (public)
+- **pred** : list of predecessors
+- **succ** : list of successors
+- **input** : input value of the Node
+- **output** : output value of the Node
+*/
 pub struct Node<'a> {
     id: u32,
 
@@ -80,16 +81,5 @@ impl<'a> Node<'a> {
     /// Returns a reference to the vector of successors of the node
     pub fn get_succ(&self) -> &Vec<&'a Link> {
         &self.succ
-    }
-}
-
-impl<'a> Clone for Node<'a> {
-    fn clone(&self) -> Self {
-        Node::new(
-            self.id,
-            self.pred.clone(),
-            self.succ.clone(),
-            Some(self.layer),
-        )
     }
 }
