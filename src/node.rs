@@ -2,7 +2,6 @@ use std::fmt;
 
 use crate::Link;
 
-// enum NodeType {}
 /// ### Defines a node in the Neural Network
 ///
 /// Attributes :
@@ -16,49 +15,49 @@ use crate::Link;
 ///
 pub struct Node<'a> {
     id: u32,
-    pub label: String,
-    // All nodes x such that the link x --> self exists
-    pred: Vec<&'a Link<'a>>,
 
-    // All nodes x such that the link self --> x exists
+    /// All nodes x such that the link x --> self exists
+    pred: Vec<&'a Link<'a>>,
+    /// All nodes x such that the link self --> x exists
     succ: Vec<&'a Link<'a>>,
 
-    input : f64,
-    output : f64,
+    pub input: f64,
+    pub output: f64,
 
-    // node_type : If useful we can crete an Enum for Input, Output,
-
+    pub layer: i32,
 }
-
 
 impl<'a> fmt::Display for Node<'a> {
     // Allows us to print the Node with the default formatter
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Node {} : {} ", self.id, self.label)
+        write!(f, "[Node: {}]", self.id)
     }
 }
 
 impl<'a> PartialEq for Node<'a> {
     // Defines equality operation between nodes
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && self.label == other.label
+        self.id == other.id
     }
 }
 
 impl<'a> Eq for Node<'a> {} // Do not remove
 
-
 impl<'a> Node<'a> {
-
-    pub fn new(id: u32, label: String, pred: Vec<&'a Link<'a>>, succ: Vec<&'a Link<'a>>) -> Self {
+    pub fn new(
+        id: u32,
+        pred: Vec<&'a Link<'a>>,
+        succ: Vec<&'a Link<'a>>,
+        layer: Option<i32>,
+    ) -> Self {
         return Node {
             id,
-            label,
             pred,
             succ,
             input: 0.0,
-            output: 0.0
-        }
+            output: 0.0,
+            layer: layer.unwrap_or(0),
+        };
     }
 
     /// Adds a new predecessor, returns true if successful false otherwise
@@ -74,46 +73,23 @@ impl<'a> Node<'a> {
     }
 
     /// Returns a reference to the vector of predecessors of the node
-    pub fn get_pred(&self) -> &Vec<&'a Link> { &self.pred }
+    pub fn get_pred(&self) -> &Vec<&'a Link> {
+        &self.pred
+    }
 
     /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<&'a Link> { &self.succ }
-
-    pub fn get_input(&self) -> f64 { self.input }
-
-    pub fn get_output(&self) -> f64 { self.output }
-
-    /// ...... and returns the input
-    // pub fn update_input(&mut self) -> f64 {
-    //     // TODO
-    // }
-
-    /// ...... and returns the output
-    // pub fn update_output(&mut self) -> f64 {
-    //     // TODO
-    // }
-
-
-    pub fn delete_pred(&mut self, pred: &'a Link) -> bool {
-        for (index, &p) in self.pred.iter().enumerate() {
-            if p == pred {
-                self.pred.swap_remove(index);
-                return true
-            }
-        }
-        false
+    pub fn get_succ(&self) -> &Vec<&'a Link> {
+        &self.succ
     }
+}
 
-    pub fn delete_succ(&mut self, succ: &'a Link) -> bool {
-        for (index, &p) in self.succ.iter().enumerate() {
-            if p == succ {
-                self.succ.swap_remove(index);
-                return true
-            }
-        }
-        false
+impl<'a> Clone for Node<'a> {
+    fn clone(&self) -> Self {
+        Node::new(
+            self.id,
+            self.pred.clone(),
+            self.succ.clone(),
+            Some(self.layer),
+        )
     }
-
-    // TODO : clone, update_input, update_output, drop
-
 }

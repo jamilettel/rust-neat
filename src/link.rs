@@ -35,6 +35,12 @@ impl<'a> PartialEq for Link<'a> {
 
 impl<'a> Eq for Link<'a> {} // Do not remove
 
+impl<'a> Clone for Link<'a> {
+    fn clone(&self) -> Self {
+        Link::new(self.src, self.dst, self.weight)
+    }
+}
+
 impl<'a> Link<'a> {
 
     /// (Optional) Creates and returns a new Link with specified arguments as attributes
@@ -46,3 +52,4 @@ impl<'a> Link<'a> {
         }
     }
 }
+
