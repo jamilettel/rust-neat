@@ -7,8 +7,8 @@ Gene is a structural mutation that happened to a given
 pub struct Gene {
     pub historical_marking: u32,
     pub enabled: bool,
-    pub from: i32,
-    pub to: i32,
+    pub from: u32,
+    pub to: u32,
     pub weight: f64,
 }
 

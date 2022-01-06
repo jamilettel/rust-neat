@@ -17,10 +17,8 @@ Attributes :
 pub struct Node<'a> {
     id: u32,
 
-    /// All nodes x such that the link x --> self exists
-    pred: Vec<&'a Link<'a>>,
     /// All nodes x such that the link self --> x exists
-    succ: Vec<&'a Link<'a>>,
+    succ: Vec<Link<'a>>,
 
     pub value: f64,
 
@@ -46,38 +44,29 @@ impl<'a> Eq for Node<'a> {} // Do not remove
 impl<'a> Node<'a> {
     pub fn new(
         id: u32,
-        pred: Vec<&'a Link<'a>>,
-        succ: Vec<&'a Link<'a>>,
         layer: Option<i32>,
     ) -> Self {
         return Node {
             id,
-            pred,
-            succ,
+            succ: Vec::new(),
             value: 0.0,
             layer: layer.unwrap_or(0),
         };
     }
 
-    /// Adds a new predecessor, returns true if successful false otherwise
-    pub fn add_pred(&mut self, new_pred: &'a Link) -> bool {
-        self.pred.push(new_pred);
-        true
-    }
-
-    /// Adds a new successor, returns true if successful false otherwise
-    pub fn add_succ(&mut self, new_succ: &'a Link) -> bool {
-        self.succ.push(new_succ);
-        true
-    }
-
-    /// Returns a reference to the vector of predecessors of the node
-    pub fn get_pred(&self) -> &Vec<&'a Link> {
-        &self.pred
+    /// Adds a new successor
+    pub fn add_succ(mut self, new_succ: &'a Node<'a>, weight: f64) -> Self {
+        self.succ.push(Link::new(new_succ, weight));
+        self
     }
 
     /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<&'a Link> {
+    pub fn get_succ(&self) -> &Vec<Link> {
         &self.succ
+    }
+
+    /// Get the node's id.
+    pub fn get_id(&self) -> u32 {
+        self.id
     }
 }

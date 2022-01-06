@@ -1,7 +1,5 @@
-
 mod neat;
 use neat::Gene;
-
 /// Main for testing purposes only
 fn main(){
 
