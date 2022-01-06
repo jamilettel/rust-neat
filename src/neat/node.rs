@@ -13,7 +13,7 @@ Attributes :
 - **succ** : list of successors
 - **input** : input value of the Node
 - **output** : output value of the Node
-*/
+ */
 pub struct Node<'a> {
     id: u32,
 
@@ -55,9 +55,8 @@ impl<'a> Node<'a> {
     }
 
     /// Adds a new successor
-    pub fn add_succ(mut self, new_succ: &'a Node<'a>, weight: f64) -> Self {
+    pub fn add_succ(&mut self, new_succ: &'a Node<'a>, weight: f64) {
         self.succ.push(Link::new(new_succ, weight));
-        self
     }
 
     /// Returns a reference to the vector of successors of the node
