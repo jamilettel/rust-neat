@@ -58,7 +58,7 @@ impl Network {
             let to = self.get_or_create_node(self.genome[i].to);
 
             unsafe {
-                (*from).add_succ(to, self.genome[i].weight);
+                Node::link(&mut *from, &mut *to, self.genome[i].weight);
             }
         }
         self

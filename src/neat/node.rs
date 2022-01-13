@@ -17,6 +17,7 @@ pub struct Node {
     id: u32,
     /// All nodes x such that the link self --> x exists
     succ: Vec<Link>,
+    prec: Vec<Link>,
 
     pub value: f64,
 
@@ -44,14 +45,20 @@ impl Node {
         return Node {
             id,
             succ: Vec::new(),
+            prec: Vec::new(),
             value: 0.0,
             layer: layer.unwrap_or(0),
         };
     }
 
-    /// Adds a new successor
-    pub fn add_succ(&mut self, new_succ: *mut Node, weight: f64) {
-        self.succ.push(Link::new(new_succ, weight));
+    // /// Adds a new successor
+    // pub fn add_succ(&mut self, new_succ: *mut Node, weight: f64) {
+    //     self.succ.push(Link::new(new_succ, weight));
+    // }
+    /// Links two nodes together
+    pub fn link(from: &mut Node, to: &mut Node, weight: f64) {
+        from.succ.push(Link::new(to, weight));
+        to.prec.push(Link::new(from, weight))
     }
 
     /// Returns a reference to the vector of successors of the node
@@ -67,9 +74,9 @@ impl Node {
     pub fn set_layers(&mut self) {
         for next in &mut self.succ {
             unsafe {
-                if (*next.dst).layer <= self.layer {
-                    (*next.dst).layer = self.layer + 1;
-                    (*next.dst).set_layers();
+                if (*next.node).layer <= self.layer {
+                    (*next.node).layer = self.layer + 1;
+                    (*next.node).set_layers();
                 }
             }
         }
@@ -96,9 +103,10 @@ mod tests {
 
     #[test]
     fn can_be_built() {
-        let n: Node = Node {
+        let _n: Node = Node {
             id: 1,
             succ: Vec::new(),
+            prec: Vec::new(),
             value: 0.1,
             layer: 1,
         };
