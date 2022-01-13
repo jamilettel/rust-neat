@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 mod neat;
-pub use neat::NEATPyWrapper;
+pub use neat::NEAT;
 
 mod gene;
 pub use gene::Gene;

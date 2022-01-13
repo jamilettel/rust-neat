@@ -1,17 +1,18 @@
+use std::cell::UnsafeCell;
 use crate::neat::Gene;
 use crate::neat::Node;
 
 /**
 Network represents an individual, a network of nodes.
 */
-pub struct Network<'a> {
-    pub inputs: Vec<Node<'a>>,
-    hidden: Vec<Node<'a>>,
-    pub outputs: Vec<Node<'a>>,
+pub struct Network {
+    pub inputs: Vec<UnsafeCell<Node>>,
+    hidden: Vec<UnsafeCell<Node>>,
+    pub outputs: Vec<UnsafeCell<Node>>,
     genome: Vec<Gene>,
 }
 
-impl<'a> Network<'a> {
+impl Network {
     /// Creates a new Network using the genome
     pub fn new(inputs: u32, outputs: u32, genome: Vec<Gene>) -> Self {
         Network {
@@ -21,66 +22,74 @@ impl<'a> Network<'a> {
             genome,
         }
         .build_nodes(inputs, outputs)
+        .build_links()
     }
 
     /// Creates the nodes of the network
     fn build_nodes(mut self, inputs: u32, outputs: u32) -> Self {
         for i in 0..=inputs {
-            self.inputs.push(Node::new(i, Some(0)));
+            self.inputs.push(UnsafeCell::new(Node::new(i, Some(0))));
         }
         for i in inputs..=outputs {
-            self.outputs.push(Node::new(i, None));
+            self.outputs.push(UnsafeCell::new(Node::new(i, None)));
         }
         for i in 0..self.genome.len() {
             if let Some(_) = self.get_node(self.genome[i].from) {
                 continue;
             }
-            self.hidden.push(Node::new(self.genome[i].from, None));
+            self.hidden
+                .push(UnsafeCell::new(Node::new(self.genome[i].from, None)));
         }
         self
     }
 
-    fn build_links(&'a mut self) {
+    fn build_links(mut self) -> Self {
         for i in 0..self.hidden.len() {
             for j in 0..self.outputs.len() {
-                self.hidden[i].add_succ(&self.outputs[j], 0.0);
+                self.hidden[i].get_mut().add_succ(self.outputs[j].get(), 0.0);
             }
         }
         for i in 0..self.inputs.len() {
             for j in 0..self.hidden.len() {
-                self.inputs[i].add_succ(&self.hidden[j], 0.0);
             }
         }
+        self
     }
 
-    fn get_hidden_node(&'a self, id: u32) -> Option<&'a Node<'a>> {
+    fn get_hidden_node(&self, id: u32) -> Option<*mut Node> {
         for node in &self.hidden {
-            if node.get_id() == id {
-                return Some(node);
+            unsafe {
+                if (*(node.get())).get_id() == id {
+                    return Some(node.get());
+                }
             }
         }
         None
     }
 
-    fn get_input_node(&'a self, id: u32) -> Option<&'a Node<'a>> {
+    fn get_input_node(&self, id: u32) -> Option<*mut Node> {
         for node in &self.inputs {
-            if node.get_id() == id {
-                return Some(node);
+            unsafe {
+                if (*(node.get())).get_id() == id {
+                    return Some(node.get());
+                }
             }
         }
         None
     }
 
-    fn get_output_node(&'a self, id: u32) -> Option<&'a Node<'a>> {
+    fn get_output_node(&self, id: u32) -> Option<*mut Node> {
         for node in &self.outputs {
-            if node.get_id() == id {
-                return Some(node);
+            unsafe {
+                if (*(node.get())).get_id() == id {
+                    return Some(node.get());
+                }
             }
         }
         None
     }
 
-    fn get_node(&'a self, id: u32) -> Option<&'a Node<'a>> {
+    fn get_node(&self, id: u32) -> Option<*mut Node> {
         // TODO improve:
         // check if node ids are naturally sorted in ascending order
         // and return None accordingly

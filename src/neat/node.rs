@@ -1,5 +1,4 @@
 use std::fmt;
-
 use crate::neat::Link;
 
 /**
@@ -14,34 +13,34 @@ Attributes :
 - **input** : input value of the Node
 - **output** : output value of the Node
  */
-pub struct Node<'a> {
+pub struct Node {
     id: u32,
 
     /// All nodes x such that the link self --> x exists
-    succ: Vec<Link<'a>>,
+    succ: Vec<Link>,
 
     pub value: f64,
 
     pub layer: i32,
 }
 
-impl<'a> fmt::Display for Node<'a> {
+impl fmt::Display for Node {
     // Allows us to print the Node with the default formatter
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Node: {}]", self.id)
     }
 }
 
-impl<'a> PartialEq for Node<'a> {
+impl PartialEq for Node {
     // Defines equality operation between nodes
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl<'a> Eq for Node<'a> {} // Do not remove
+impl Eq for Node {} // Do not remove
 
-impl<'a> Node<'a> {
+impl Node {
     pub fn new(
         id: u32,
         layer: Option<i32>,
@@ -55,7 +54,7 @@ impl<'a> Node<'a> {
     }
 
     /// Adds a new successor
-    pub fn add_succ(&mut self, new_succ: &'a Node<'a>, weight: f64) {
+    pub fn add_succ(&mut self, new_succ: *mut Node, weight: f64) {
         self.succ.push(Link::new(new_succ, weight));
     }
 

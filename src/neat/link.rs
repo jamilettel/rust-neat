@@ -1,13 +1,13 @@
 use crate::neat::Node;
 
-pub struct Link<'a> {
-    pub dst: &'a Node<'a>,
+pub struct Link {
+    pub dst: *mut Node,
     pub weight: f64,
 }
 
-impl<'a> Link<'a> {
+impl Link {
     /// (Optional) Creates and returns a new Link with specified arguments as attributes
-    pub fn new(dst: &'a Node<'a>, weight: f64) -> Self {
+    pub fn new(dst: *mut Node, weight: f64) -> Self {
         return Link { dst, weight };
     }
 }
