@@ -63,6 +63,17 @@ impl Node {
     pub fn get_id(&self) -> u32 {
         self.id
     }
+
+    pub fn set_layers(&mut self) {
+        for next in &mut self.succ {
+            unsafe {
+                if (*next.dst).layer <= self.layer {
+                    (*next.dst).layer = self.layer + 1;
+                    (*next.dst).set_layers();
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
