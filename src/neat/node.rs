@@ -1,5 +1,5 @@
-use std::fmt;
 use crate::neat::Link;
+use std::fmt;
 
 /**
 ### Defines a node in the Neural Network
@@ -12,10 +12,9 @@ Attributes :
 - **succ** : list of successors
 - **input** : input value of the Node
 - **output** : output value of the Node
- */
+*/
 pub struct Node {
     id: u32,
-
     /// All nodes x such that the link self --> x exists
     succ: Vec<Link>,
 
@@ -41,10 +40,7 @@ impl PartialEq for Node {
 impl Eq for Node {} // Do not remove
 
 impl Node {
-    pub fn new(
-        id: u32,
-        layer: Option<i32>,
-    ) -> Self {
+    pub fn new(id: u32, layer: Option<i32>) -> Self {
         return Node {
             id,
             succ: Vec::new(),
@@ -66,5 +62,35 @@ impl Node {
     /// Get the node's id.
     pub fn get_id(&self) -> u32 {
         self.id
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn setup() {
+        // succ
+        // let l: Link = Link {
+        //     src: &n,
+        //     dst: &n,
+        //     weight: 69.0,
+        // };
+        // let g: Gene = Gene {
+        //     id: 3,
+        //     link: &l,
+        //     enabled: true,
+        // };
+    }
+
+    #[test]
+    fn can_be_built() {
+        let n: Node = Node {
+            id: 1,
+            succ: Vec::new(),
+            value: 0.1,
+            layer: 1,
+        };
+        assert!(false);
     }
 }
