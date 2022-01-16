@@ -1,6 +1,7 @@
 use crate::neat::Gene;
 use crate::neat::Node;
 use std::cell::UnsafeCell;
+use super::Link;
 
 /**
 Network represents an individual, a network of nodes.
@@ -10,35 +11,56 @@ pub struct Network {
     hidden: Vec<UnsafeCell<Node>>,
     pub outputs: Vec<UnsafeCell<Node>>,
     genome: Vec<Gene>,
+    links: Vec<UnsafeCell<Link>>
 }
 
 impl Network {
     /// Creates a new Network using the genome
-    pub fn new(inputs: u32, outputs: u32, genome: Vec<Gene>) -> Self {
+    pub fn new(n_inputs: u32, n_outputs: u32, genome: Option<Vec<Gene>>) -> Self {
         let mut network = Network {
             inputs: Vec::new(),
             hidden: Vec::new(),
             outputs: Vec::new(),
-            genome,
+            links: Vec::new(),
+            genome: genome.unwrap_or_else(|| Network::build_genome(n_inputs, n_outputs)),
         }
-        .build(inputs, outputs);
+        .build(n_inputs, n_outputs);
         network.compute_layers();
         network
     }
 
+    fn build_genome(n_inputs: u32, n_outputs: u32) -> Vec<Gene> {
+        let mut genome = Vec::<Gene>::new();
+        let mut historical_marking = 0;
+        for i in 0..n_inputs {
+            for j in n_inputs..=n_inputs + n_outputs {
+                genome.push(Gene {
+                    enabled: true,
+                    from: i,
+                    to: j,
+                    historical_marking,
+                    weight: 0.0,
+                });
+                historical_marking += 1;
+            }
+        }
+        genome
+    }
+
     /// Builds the inputs and outputs, and then the rest of the network using the genome
-    fn build(self, inputs: u32, outputs: u32) -> Self {
-        self.build_inputs_outputs(inputs, outputs).build_network()
+    fn build(self, n_inputs: u32, n_outputs: u32) -> Self {
+        self.build_inputs_outputs(n_inputs, n_outputs)
+            .build_network()
     }
 
     /// Creates the nodes of the network
-    fn build_inputs_outputs(mut self, inputs: u32, outputs: u32) -> Self {
-        self.inputs.reserve(inputs as usize);
-        self.outputs.reserve(outputs as usize);
-        for i in 0..=inputs {
+    fn build_inputs_outputs(mut self, n_inputs: u32, n_outputs: u32) -> Self {
+        self.inputs.reserve(n_inputs as usize);
+        self.outputs.reserve(n_outputs as usize);
+        for i in 0..n_inputs {
             self.inputs.push(UnsafeCell::new(Node::new(i, Some(0))));
         }
-        for i in inputs..=outputs {
+        for i in n_inputs..n_outputs + n_inputs {
             self.outputs.push(UnsafeCell::new(Node::new(i, None)));
         }
         self
@@ -123,5 +145,22 @@ impl Network {
     /// Computes the outputs using the network's inputs
     pub fn compute(&mut self) {
         todo!();
+    }
+}
+
+#[cfg(test)]
+mod tests_network {
+    use super::*;
+
+    #[test]
+    fn can_be_built() {
+        let network = Network::new(5, 5, None);
+        assert_eq!(network.outputs.len(), 5);
+        assert_eq!(network.inputs.len(), 5);
+        for node in network.inputs {
+            unsafe {
+                println!("{}", (*(node.get())).get_id());
+            }
+        }
     }
 }

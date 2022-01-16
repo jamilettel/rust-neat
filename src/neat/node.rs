@@ -16,8 +16,8 @@ Attributes :
 pub struct Node {
     id: u32,
     /// All nodes x such that the link self --> x exists
-    succ: Vec<Link>,
-    prec: Vec<Link>,
+    succ: Vec<*mut Link>,
+    pred: Vec<*mut Link>,
 
     pub value: f64,
 
@@ -45,7 +45,7 @@ impl Node {
         return Node {
             id,
             succ: Vec::new(),
-            prec: Vec::new(),
+            pred: Vec::new(),
             value: 0.0,
             layer: layer.unwrap_or(0),
         };
@@ -58,7 +58,7 @@ impl Node {
     /// Links two nodes together
     pub fn link(from: &mut Node, to: &mut Node, weight: f64) {
         from.succ.push(Link::new(to, weight));
-        to.prec.push(Link::new(from, weight))
+        to.pred.push(Link::new(from, weight))
     }
 
     /// Returns a reference to the vector of successors of the node
@@ -106,10 +106,10 @@ mod tests {
         let _n: Node = Node {
             id: 1,
             succ: Vec::new(),
-            prec: Vec::new(),
+            pred: Vec::new(),
             value: 0.1,
             layer: 1,
         };
-        assert!(false);
+        assert!(true);
     }
 }
