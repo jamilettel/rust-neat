@@ -1,7 +1,7 @@
+use super::Link;
 use crate::neat::Gene;
 use crate::neat::Node;
 use std::cell::UnsafeCell;
-use super::Link;
 
 /**
 Network represents an individual, a network of nodes.
@@ -11,7 +11,7 @@ pub struct Network {
     hidden: Vec<UnsafeCell<Node>>,
     pub outputs: Vec<UnsafeCell<Node>>,
     genome: Vec<Gene>,
-    links: Vec<UnsafeCell<Link>>
+    links: Vec<UnsafeCell<Link>>,
 }
 
 impl Network {
@@ -76,11 +76,17 @@ impl Network {
     /// Creates the hidden nodes and links all the nodes using the genome
     fn build_network(mut self) -> Self {
         for i in 0..self.genome.len() {
+            if !self.genome[i].enabled {
+                continue;
+            }
+
             let from = self.get_or_create_node(self.genome[i].from);
             let to = self.get_or_create_node(self.genome[i].to);
-
+            let link_cell = UnsafeCell::new(Link::new(from, to, self.genome[i].weight));
             unsafe {
-                Node::link(&mut *from, &mut *to, self.genome[i].weight);
+                (*from).add_link(link_cell.get());
+                (*to).add_link(link_cell.get());
+                self.links.push(link_cell);
             }
         }
         self

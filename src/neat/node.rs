@@ -51,18 +51,23 @@ impl Node {
         };
     }
 
-    // /// Adds a new successor
-    // pub fn add_succ(&mut self, new_succ: *mut Node, weight: f64) {
-    //     self.succ.push(Link::new(new_succ, weight));
-    // }
-    /// Links two nodes together
-    pub fn link(from: &mut Node, to: &mut Node, weight: f64) {
-        from.succ.push(Link::new(to, weight));
-        to.pred.push(Link::new(from, weight))
+    /// Adds a link to self, takes the link as argument and checks
+    /// wether self is src or dst to determine wether to add link
+    /// to succ or pred
+    pub fn add_link(&mut self, link: *mut Link) {
+        unsafe {
+            if (*link).src == self {
+                self.succ.push(link);
+            } else if (*link).dst == self {
+                self.pred.push(link);
+            } else {
+                panic!("Node is not equal to link dst or src");
+            }
+        }
     }
 
     /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<Link> {
+    pub fn get_succ(&self) -> &Vec<*mut Link> {
         &self.succ
     }
 
@@ -74,9 +79,9 @@ impl Node {
     pub fn set_layers(&mut self) {
         for next in &mut self.succ {
             unsafe {
-                if (*next.node).layer <= self.layer {
-                    (*next.node).layer = self.layer + 1;
-                    (*next.node).set_layers();
+                if (*(*(*next)).dst).layer <= self.layer {
+                    (*(*(*next)).dst).layer = self.layer + 1;
+                    (*(*(*next)).dst).set_layers();
                 }
             }
         }
