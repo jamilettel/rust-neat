@@ -150,7 +150,9 @@ impl Network {
 
     /// Computes the outputs using the network's inputs
     pub fn compute(&mut self) {
-        todo!();
+        for output in &mut self.outputs {
+            output.get_mut().compute(None);
+        }
     }
 }
 

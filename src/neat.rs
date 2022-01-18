@@ -14,3 +14,8 @@ pub use network::Network;
 
 mod node;
 pub use node::Node;
+
+mod utils;
+pub use utils::Settings;
+pub use utils::sigmoid;
+pub use utils::SETTINGS;

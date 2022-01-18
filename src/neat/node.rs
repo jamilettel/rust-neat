@@ -1,5 +1,6 @@
 use crate::neat::Link;
 use std::fmt;
+use super::sigmoid;
 
 /**
 ### Defines a node in the Neural Network
@@ -18,10 +19,9 @@ pub struct Node {
     /// All nodes x such that the link self --> x exists
     succ: Vec<*mut Link>,
     pred: Vec<*mut Link>,
-
     pub value: f64,
-
     pub layer: i32,
+    compute_iteration: u32,
 }
 
 impl fmt::Display for Node {
@@ -48,6 +48,7 @@ impl Node {
             pred: Vec::new(),
             value: 0.0,
             layer: layer.unwrap_or(0),
+            compute_iteration: 0,
         };
     }
 
@@ -86,6 +87,22 @@ impl Node {
             }
         }
     }
+
+    pub fn compute(&mut self, compute_iteration: Option<u32>) -> f64 {
+        let compute_it = compute_iteration.unwrap_or(self.compute_iteration + 1);
+        // Returns value because it has already been computed (or is an input when pred is empty)
+        if compute_it <= self.compute_iteration || self.pred.is_empty() {
+            return self.value;
+        }
+        for link in &self.pred {
+            unsafe {
+                self.value += (*(*(*link)).src).compute(Some(compute_it));
+            }
+        }
+        self.compute_iteration = compute_it;
+        self.value = sigmoid(self.value);
+        self.value
+    }
 }
 
 #[cfg(test)]
@@ -114,6 +131,7 @@ mod tests {
             pred: Vec::new(),
             value: 0.1,
             layer: 1,
+            compute_iteration: 0,
         };
         assert!(true);
     }
