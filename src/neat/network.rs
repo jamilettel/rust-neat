@@ -10,6 +10,11 @@ pub struct Network {
     pub inputs: Vec<UnsafeCell<Node>>,
     hidden: Vec<UnsafeCell<Node>>,
     pub outputs: Vec<UnsafeCell<Node>>,
+    /**
+    Bias node, always has a value of 1, and is on layer 0 (input layer), with id = 0
+    Will not have any links at the start.
+    */
+    bias: UnsafeCell<Node>,
     genome: Vec<Gene>,
     links: Vec<UnsafeCell<Link>>,
 }
@@ -23,17 +28,20 @@ impl Network {
             outputs: Vec::new(),
             links: Vec::new(),
             genome: genome.unwrap_or_else(|| Network::build_genome(n_inputs, n_outputs)),
+            bias: UnsafeCell::new(Node::new(0, Some(0))),
         }
         .build(n_inputs, n_outputs);
         network.compute_layers();
+        network.bias.get_mut().value = 1.0;
         network
     }
 
+    /// Builds an empty genome
     fn build_genome(n_inputs: u32, n_outputs: u32) -> Vec<Gene> {
         let mut genome = Vec::<Gene>::new();
         let mut historical_marking = 0;
-        for i in 0..n_inputs {
-            for j in n_inputs..=n_inputs + n_outputs {
+        for i in 1..=n_inputs {
+            for j in n_inputs + 1..=n_inputs + n_outputs {
                 genome.push(Gene {
                     enabled: true,
                     from: i,
@@ -57,10 +65,10 @@ impl Network {
     fn build_inputs_outputs(mut self, n_inputs: u32, n_outputs: u32) -> Self {
         self.inputs.reserve(n_inputs as usize);
         self.outputs.reserve(n_outputs as usize);
-        for i in 0..n_inputs {
+        for i in 1..=n_inputs {
             self.inputs.push(UnsafeCell::new(Node::new(i, Some(0))));
         }
-        for i in n_inputs..n_outputs + n_inputs {
+        for i in n_inputs + 1..=n_outputs + n_inputs {
             self.outputs.push(UnsafeCell::new(Node::new(i, None)));
         }
         self
@@ -157,7 +165,7 @@ impl Network {
 }
 
 #[cfg(test)]
-mod tests_network {
+mod tests {
     use super::*;
 
     #[test]
@@ -165,9 +173,29 @@ mod tests_network {
         let network = Network::new(5, 5, None);
         assert_eq!(network.outputs.len(), 5);
         assert_eq!(network.inputs.len(), 5);
-        for node in network.inputs {
-            unsafe {
-                println!("{}", (*(node.get())).get_id());
+        unsafe {
+            assert_eq!((*network.inputs[0].get()).get_id(), 1);
+            assert_eq!((*network.inputs[1].get()).get_id(), 2);
+            assert_eq!((*network.inputs[2].get()).get_id(), 3);
+            assert_eq!((*network.inputs[3].get()).get_id(), 4);
+            assert_eq!((*network.inputs[4].get()).get_id(), 5);
+            assert_eq!((*network.outputs[0].get()).get_id(), 6);
+            assert_eq!((*network.outputs[1].get()).get_id(), 7);
+            assert_eq!((*network.outputs[2].get()).get_id(), 8);
+            assert_eq!((*network.outputs[3].get()).get_id(), 9);
+            assert_eq!((*network.outputs[4].get()).get_id(), 10);
+        }
+    }
+
+    #[test]
+    fn genome_test() {
+        let genome = Network::build_genome(5, 5);
+        let mut i = 0;
+        for from in 1..=5 {
+            for to in 6..=10 {
+                assert_eq!(genome[i].from, from);
+                assert_eq!(genome[i].to, to);
+                i += 1;
             }
         }
     }
