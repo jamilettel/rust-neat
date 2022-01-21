@@ -7,7 +7,8 @@ mod gene;
 pub use gene::Gene;
 
 mod link;
-pub use link::Link;
+pub use link::LinkFrom;
+pub use link::LinkTo;
 
 mod network;
 pub use network::Network;

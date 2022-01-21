@@ -1,6 +1,7 @@
-use crate::neat::Link;
-use std::fmt;
+use super::LinkFrom;
+use super::LinkTo;
 use super::sigmoid;
+use std::fmt;
 
 /**
 ### Defines a node in the Neural Network
@@ -17,8 +18,8 @@ Attributes :
 pub struct Node {
     id: u32,
     /// All nodes x such that the link self --> x exists
-    succ: Vec<*mut Link>,
-    pred: Vec<*mut Link>,
+    succ: Vec<LinkTo>,
+    pred: Vec<LinkFrom>,
     pub value: f64,
     pub layer: i32,
     compute_iteration: u32,
@@ -52,24 +53,22 @@ impl Node {
         };
     }
 
-    /// Adds a link to self, takes the link as argument and checks
-    /// wether self is src or dst to determine wether to add link
-    /// to succ or pred
-    pub fn add_link(&mut self, link: *mut Link) {
-        unsafe {
-            if (*link).src == self {
-                self.succ.push(link);
-            } else if (*link).dst == self {
-                self.pred.push(link);
-            } else {
-                panic!("Node is not equal to link dst or src");
-            }
-        }
+    pub fn add_link_to(&mut self, node_id: u32) {
+        self.succ.push(LinkTo { to: node_id });
+    }
+
+    pub fn add_link_from(&mut self, node_id: u32, weight: f64) {
+        self.pred.push(LinkFrom { from: node_id, weight });
     }
 
     /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<*mut Link> {
+    pub fn get_succ(&self) -> &Vec<LinkTo> {
         &self.succ
+    }
+
+    /// Returns a reference to the vector of successors of the node
+    pub fn get_pred(&self) -> &Vec<LinkFrom> {
+        &self.pred
     }
 
     /// Get the node's id.
@@ -80,10 +79,10 @@ impl Node {
     pub fn set_layers(&mut self) {
         for next in &mut self.succ {
             unsafe {
-                if (*(*(*next)).dst).layer <= self.layer {
-                    (*(*(*next)).dst).layer = self.layer + 1;
-                    (*(*(*next)).dst).set_layers();
-                }
+                // if (*(*(*next)).dst).layer <= self.layer {
+                //     (*(*(*next)).dst).layer = self.layer + 1;
+                //     (*(*(*next)).dst).set_layers();
+                // }
             }
         }
     }
@@ -95,9 +94,9 @@ impl Node {
             return self.value;
         }
         for link in &self.pred {
-            unsafe {
-                self.value += (*(*(*link)).src).compute(Some(compute_it));
-            }
+            // unsafe {
+                // self.value += (*(*(*link)).src).compute(Some(compute_it));
+            // }
         }
         self.compute_iteration = compute_it;
         self.value = sigmoid(self.value);
