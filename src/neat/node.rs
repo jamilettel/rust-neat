@@ -1,50 +1,54 @@
+use super::sigmoid;
 use super::LinkFrom;
 use super::LinkTo;
-use super::sigmoid;
 use std::fmt;
 
+#[derive(PartialEq, Debug)]
+pub enum NodeType {
+    BIAS,
+    INPUT,
+    HIDDEN,
+    OUTPUT,
+}
+
+impl fmt::Display for NodeType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match &self {
+                Self::BIAS => "Bias",
+                Self::INPUT => "Input",
+                Self::HIDDEN => "Hidden",
+                Self::OUTPUT => "Output",
+            }
+        )
+    }
+}
+
 /**
-### Defines a node in the Neural Network
-
-Attributes :
-
-- **id**
-- **label** (public)
-- **pred** : list of predecessors
-- **succ** : list of successors
-- **input** : input value of the Node
-- **output** : output value of the Node
+# Defines a node in the Neural Network
 */
 pub struct Node {
-    id: u32,
-    /// All nodes x such that the link self --> x exists
-    succ: Vec<LinkTo>,
-    pred: Vec<LinkFrom>,
+    pub node_type: NodeType,
+    pub succ: Vec<LinkTo>,
+    pub pred: Vec<LinkFrom>,
     pub value: f64,
     pub layer: i32,
-    compute_iteration: u32,
+    pub compute_iteration: u32,
 }
 
 impl fmt::Display for Node {
     // Allows us to print the Node with the default formatter
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[Node: {}]", self.id)
+        write!(f, "[Node of type {}]", self.node_type)
     }
 }
-
-impl PartialEq for Node {
-    // Defines equality operation between nodes
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for Node {} // Do not remove
 
 impl Node {
-    pub fn new(id: u32, layer: Option<i32>) -> Self {
+    pub fn new(node_type: NodeType, layer: Option<i32>) -> Self {
         return Node {
-            id,
+            node_type,
             succ: Vec::new(),
             pred: Vec::new(),
             value: 0.0,
@@ -58,33 +62,10 @@ impl Node {
     }
 
     pub fn add_link_from(&mut self, node_id: u32, weight: f64) {
-        self.pred.push(LinkFrom { from: node_id, weight });
-    }
-
-    /// Returns a reference to the vector of successors of the node
-    pub fn get_succ(&self) -> &Vec<LinkTo> {
-        &self.succ
-    }
-
-    /// Returns a reference to the vector of successors of the node
-    pub fn get_pred(&self) -> &Vec<LinkFrom> {
-        &self.pred
-    }
-
-    /// Get the node's id.
-    pub fn get_id(&self) -> u32 {
-        self.id
-    }
-
-    pub fn set_layers(&mut self) {
-        for next in &mut self.succ {
-            unsafe {
-                // if (*(*(*next)).dst).layer <= self.layer {
-                //     (*(*(*next)).dst).layer = self.layer + 1;
-                //     (*(*(*next)).dst).set_layers();
-                // }
-            }
-        }
+        self.pred.push(LinkFrom {
+            from: node_id,
+            weight,
+        });
     }
 
     pub fn compute(&mut self, compute_iteration: Option<u32>) -> f64 {
@@ -95,7 +76,7 @@ impl Node {
         }
         for link in &self.pred {
             // unsafe {
-                // self.value += (*(*(*link)).src).compute(Some(compute_it));
+            // self.value += (*(*(*link)).src).compute(Some(compute_it));
             // }
         }
         self.compute_iteration = compute_it;
@@ -125,7 +106,7 @@ mod tests {
     #[test]
     fn can_be_built() {
         let _n: Node = Node {
-            id: 1,
+            node_type: NodeType::BIAS,
             succ: Vec::new(),
             pred: Vec::new(),
             value: 0.1,

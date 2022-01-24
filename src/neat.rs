@@ -15,6 +15,7 @@ pub use network::Network;
 
 mod node;
 pub use node::Node;
+pub use node::NodeType;
 
 mod utils;
 pub use utils::Settings;
