@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::neat::Gene;
 use crate::neat::Node;
 
+use super::sigmoid;
 use super::NodeType;
 
 /**
@@ -133,13 +134,29 @@ impl Network {
     */
     pub fn compute(&mut self) {
         for id in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
-            // self.nodes.get_mut(&i).unwrap().compute(None);
-            self.compute_rec(id);
+            self.compute_rec(id, None);
         }
     }
 
-    pub fn compute_rec(&mut self, id: u32) {
-        
+    pub fn compute_rec(&mut self, id: u32, compute_it: Option<u32>) {
+        // remove the node so that we don't have to fetch it each time
+        // this won't be a problem since we go from the highest layer to the lowest only
+        let mut node = self.nodes.remove(&id).unwrap();
+        let compute_iteration = compute_it.unwrap_or(node.compute_iteration + 1);
+
+        // no need to recompute (or is an input/bias), we use the value stored in the node
+        if compute_iteration > node.compute_iteration && !node.pred.is_empty() {
+            for succ in &node.succ {
+                if self.nodes.get(&succ.to).unwrap().compute_iteration < compute_iteration {
+                    self.compute_rec(succ.to, compute_it);
+                }
+                node.value += self.nodes.get(&succ.to).unwrap().value;
+            }
+            node.compute_iteration = compute_iteration;
+            node.value = sigmoid(node.value);
+        }
+        // add the node back to the map
+        self.nodes.insert(id, node);
     }
 }
 
@@ -150,7 +167,7 @@ mod tests {
     #[test]
     fn can_be_built() {
         let network = Network::new(5, 5, None);
-        // 5 input + 5 output + 1 hidden
+        // 5 input + 5 output + 1 bias
         assert_eq!(network.nodes.len(), 11);
         assert_eq!(network.nodes[&0].node_type, NodeType::BIAS);
         assert_eq!(network.nodes[&1].node_type, NodeType::INPUT);

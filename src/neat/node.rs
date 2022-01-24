@@ -1,4 +1,3 @@
-use super::sigmoid;
 use super::LinkFrom;
 use super::LinkTo;
 use std::fmt;
@@ -66,22 +65,6 @@ impl Node {
             from: node_id,
             weight,
         });
-    }
-
-    pub fn compute(&mut self, compute_iteration: Option<u32>) -> f64 {
-        let compute_it = compute_iteration.unwrap_or(self.compute_iteration + 1);
-        // Returns value because it has already been computed (or is an input when pred is empty)
-        if compute_it <= self.compute_iteration || self.pred.is_empty() {
-            return self.value;
-        }
-        for link in &self.pred {
-            // unsafe {
-            // self.value += (*(*(*link)).src).compute(Some(compute_it));
-            // }
-        }
-        self.compute_iteration = compute_it;
-        self.value = sigmoid(self.value);
-        self.value
     }
 }
 
