@@ -4,7 +4,10 @@ mod neat;
 pub use neat::NEAT;
 
 mod gene;
-pub use gene::Gene;
+use gene::Gene;
+
+mod genome;
+pub use genome::Genome;
 
 mod link;
 pub use link::LinkFrom;
@@ -21,3 +24,4 @@ mod utils;
 pub use utils::Settings;
 pub use utils::sigmoid;
 pub use utils::SETTINGS;
+

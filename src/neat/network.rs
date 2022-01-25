@@ -1,54 +1,27 @@
-use std::collections::HashMap;
-
-use crate::neat::Gene;
-use crate::neat::Node;
-
 use super::sigmoid;
+use super::Genome;
+use super::Node;
 use super::NodeType;
+use std::collections::HashMap;
 
 /**
 Network represents an individual, a network of nodes.
  */
 pub struct Network {
-    n_inputs: u32,
-    n_outputs: u32,
-    n_hidden: u32,
     nodes: HashMap<u32, Node>,
-    genome: Vec<Gene>,
+    genome: Genome,
 }
 
 impl Network {
     /// Creates a new Network using the genome
-    pub fn new(n_inputs: u32, n_outputs: u32, genome: Option<Vec<Gene>>) -> Self {
+    pub fn new(n_inputs: u32, n_outputs: u32, genome: Option<Genome>) -> Self {
         let mut network = Network {
-            n_inputs,
-            n_hidden: 0,
-            n_outputs,
             nodes: HashMap::new(),
-            genome: genome.unwrap_or_else(|| Network::build_genome(n_inputs, n_outputs)),
+            genome: genome.unwrap_or_else(|| Genome::new(n_inputs, n_outputs)),
         }
         .build();
         network.compute_layers();
         network
-    }
-
-    /// Builds an empty genome
-    fn build_genome(n_inputs: u32, n_outputs: u32) -> Vec<Gene> {
-        let mut genome = Vec::<Gene>::new();
-        let mut historical_marking = 0;
-        for i in 1..=n_inputs {
-            for j in n_inputs + 1..=n_inputs + n_outputs {
-                genome.push(Gene {
-                    enabled: true,
-                    from: i,
-                    to: j,
-                    historical_marking,
-                    weight: 0.0,
-                });
-                historical_marking += 1;
-            }
-        }
-        genome
     }
 
     /// Builds the inputs and outputs, and then the rest of the network using the genome
@@ -58,14 +31,12 @@ impl Network {
 
     /// Creates the nodes of the network
     fn build_inputs_outputs(mut self) -> Self {
-        // outputs + inputs + hidden + 1
-        self.nodes
-            .reserve((self.n_outputs + self.n_hidden + self.n_inputs + 1) as usize);
+        self.nodes.reserve((self.genome.get_total_nodes()) as usize);
         self.nodes.insert(0, Node::new(NodeType::BIAS, Some(0)));
-        for i in 1..=self.n_inputs {
+        for i in 1..=self.genome.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::INPUT, Some(0)));
         }
-        for i in self.n_inputs + 1..=self.n_outputs + self.n_inputs {
+        for i in self.genome.n_inputs + 1..=self.genome.n_outputs + self.genome.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::OUTPUT, None));
         }
         self
@@ -73,7 +44,7 @@ impl Network {
 
     /// Recursively sets the layers on the nodes in the network starting from the inputs
     fn compute_layers(&mut self) {
-        for input_id in 1..=self.n_inputs {
+        for input_id in 1..=self.genome.n_inputs {
             self.compute_layers_rec(input_id);
         }
     }
@@ -97,14 +68,14 @@ impl Network {
 
     /// Creates the hidden nodes and links all the nodes using the genome
     fn build_network(mut self) -> Self {
-        for i in 0..self.genome.len() {
-            if !self.genome[i].enabled {
+        for i in 0..self.genome.genes.len() {
+            if !self.genome.genes[i].enabled {
                 continue;
             }
 
-            let from = self.genome[i].from;
-            let to = self.genome[i].to;
-            let weight = self.genome[i].weight;
+            let from = self.genome.genes[i].from;
+            let to = self.genome.genes[i].to;
+            let weight = self.genome.genes[i].weight;
             self.get_or_create_node(from).add_link_to(to);
             self.get_or_create_node(to).add_link_from(from, weight);
         }
@@ -133,7 +104,7 @@ impl Network {
     We start by using computing the output nodes, and recursively computing everything else
     */
     pub fn compute(&mut self) {
-        for id in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
+        for id in self.genome.n_inputs + 1..=self.genome.n_inputs + self.genome.n_outputs {
             self.compute_rec(id, None);
         }
     }
@@ -180,18 +151,5 @@ mod tests {
         assert_eq!(network.nodes[&8].node_type, NodeType::OUTPUT);
         assert_eq!(network.nodes[&9].node_type, NodeType::OUTPUT);
         assert_eq!(network.nodes[&10].node_type, NodeType::OUTPUT);
-    }
-
-    #[test]
-    fn genome_test() {
-        let genome = Network::build_genome(5, 5);
-        let mut i = 0;
-        for from in 1..=5 {
-            for to in 6..=10 {
-                assert_eq!(genome[i].from, from);
-                assert_eq!(genome[i].to, to);
-                i += 1;
-            }
-        }
     }
 }

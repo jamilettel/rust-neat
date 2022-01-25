@@ -72,20 +72,6 @@ impl Node {
 mod tests {
     use super::*;
 
-    fn setup() {
-        // succ
-        // let l: Link = Link {
-        //     src: &n,
-        //     dst: &n,
-        //     weight: 69.0,
-        // };
-        // let g: Gene = Gene {
-        //     id: 3,
-        //     link: &l,
-        //     enabled: true,
-        // };
-    }
-
     #[test]
     fn can_be_built() {
         let _n: Node = Node {
