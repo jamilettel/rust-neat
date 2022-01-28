@@ -1,11 +1,12 @@
 use std::fmt;
-
+use pyo3::*;
 use super::Network;
 
 /**
 Main class.
 This class allows you to train an AI.
  */
+#[pyclass]
 pub struct NEAT {
     pop: Vec<Network>,
     inputs: usize,
@@ -24,7 +25,11 @@ impl fmt::Display for NEAT {
     }
 }
 
+#[pymethods]
 impl NEAT {
+
+    #[new]
+    #[args(pop_size, inputs, outputs)]
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
         let mut neat = NEAT {
             pop: Vec::new(),
