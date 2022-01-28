@@ -17,10 +17,10 @@ impl fmt::Display for NEAT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "[NEAT: {{pop_size: {}, ouputs: {}, inputs: {}}}]",
+            "[NEAT: {{pop_size: {}, inputs: {}, outputs: {}}}]",
             self.pop_size(),
-            self.outputs,
-            self.inputs
+            self.inputs,
+            self.outputs
         )
     }
 }
@@ -31,13 +31,11 @@ impl NEAT {
     #[new]
     #[args(pop_size, inputs, outputs)]
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
-        let mut neat = NEAT {
+        NEAT {
             pop: Vec::new(),
             inputs,
             outputs,
-        };
-        neat.pop.reserve(pop_size);
-        neat
+        }.populate(pop_size)
     }
 
     pub fn pop_size(&self) -> usize {
@@ -46,5 +44,15 @@ impl NEAT {
 
     fn __str__(&self) -> String {
         format!("{}", self)
+    }
+}
+
+impl NEAT {
+    fn populate(mut self, pop_size: usize) -> Self {
+        self.pop.reserve(pop_size);
+        for _ in 0..pop_size {
+            self.pop.push(Network::new(self.inputs as u32, self.outputs as u32, None));
+        }
+        self
     }
 }
