@@ -36,6 +36,15 @@ impl Genome {
         self
     }
 
+    #[inline(always)]
+    pub fn get_total_nodes(&self) -> u32 {
+        // inputs + hidden + outputs + bias node
+        self.n_inputs + self.n_hidden + self.n_outputs + 1
+    }
+}
+
+/// This impl block contains code for computing differences
+impl Genome {
     fn update_disjoint_excess(
         higher_hm: &Self,
         i: &mut usize,
@@ -58,25 +67,34 @@ impl Genome {
         *disjoint += offset as u32;
     }
 
-    pub fn compute_difference(a: &Self, b: &Self) -> f64 {
-        let mut n = std::cmp::max(a.get_total_nodes(), b.get_total_nodes());
+    fn get_largest_smallest<'a>(a: &'a Self, b: &'a Self) -> (&'a Self, &'a Self) {
+        if a.genes.len() > b.genes.len() {
+            (a, b)
+        } else {
+            (b, a)
+        }
+    }
+
+    fn get_n(a: &Self, b: &Self) -> u32 {
+        let n = std::cmp::max(a.get_total_nodes(), b.get_total_nodes());
+        if n <= unsafe { SETTINGS.small_genome_size } {
+            1
+        } else {
+            n
+        }
+    }
+
+    /**
+    returns a tuple with:
+    - weight difference: f64
+    - number of disjoint: u32
+    - number of excess: u32
+    */
+    fn get_differnce_values(a: &Self, b: &Self) -> (f64, u32, u32) {
+        let (largest, smallest) = Genome::get_largest_smallest(a, b);
         let mut w_diff = 0.0;
         let mut disjoint = 0;
         let mut excess = 0;
-
-        if n <= unsafe { SETTINGS.small_genome_size } {
-            n = 1;
-        }
-
-        let largest: &Self;
-        let smallest: &Self;
-        if a.genes.len() > b.genes.len() {
-            largest = a;
-            smallest = b;
-        } else {
-            largest = b;
-            smallest = a;
-        };
 
         let mut j = 0;
         let mut i = 0;
@@ -111,19 +129,19 @@ impl Genome {
         } else if j < smallest.genes.len() {
             excess += (smallest.genes.len() - j) as u32;
         }
+        (w_diff, disjoint, excess)
+    }
+
+    pub fn compute_difference(a: &Self, b: &Self) -> f64 {
+        let n = Genome::get_n(a, b);
+        let (weight_diff, disjoint, excess) = Genome::get_differnce_values(a, b);
 
         unsafe {
             (SETTINGS.similarity_c1 * f64::from(excess)
                 + SETTINGS.similarity_c2 * f64::from(disjoint))
                 / f64::from(n)
-                + SETTINGS.similarity_c3 * w_diff
+                + SETTINGS.similarity_c3 * weight_diff
         }
-    }
-
-    #[inline(always)]
-    pub fn get_total_nodes(&self) -> u32 {
-        // inputs + hidden + outputs + bias node
-        self.n_inputs + self.n_hidden + self.n_outputs + 1
     }
 }
 
