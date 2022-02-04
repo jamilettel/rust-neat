@@ -25,3 +25,5 @@ pub use utils::Settings;
 pub use utils::sigmoid;
 pub use utils::SETTINGS;
 
+mod species;
+pub use species::Species;

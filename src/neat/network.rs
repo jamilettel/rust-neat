@@ -129,6 +129,10 @@ impl Network {
         // add the node back to the map
         self.nodes.insert(id, node);
     }
+
+    pub fn compute_similarity(a: &Self, b: &Self) -> f64 {
+        todo!()
+    }
 }
 
 #[cfg(test)]
