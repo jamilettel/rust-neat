@@ -4,7 +4,7 @@ mod neat;
 pub use neat::NEAT;
 
 mod gene;
-use gene::Gene;
+pub use gene::Gene;
 
 mod genome;
 pub use genome::Genome;
