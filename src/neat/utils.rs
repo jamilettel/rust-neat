@@ -4,6 +4,7 @@ pub struct Settings {
     pub similarity_c1: f64,
     pub similarity_c2: f64,
     pub similarity_c3: f64,
+    pub max_difference: f64,
 }
 
 pub static mut SETTINGS: Settings = Settings {
@@ -12,6 +13,7 @@ pub static mut SETTINGS: Settings = Settings {
     similarity_c1: 1.0,
     similarity_c2: 1.0,
     similarity_c3: 0.4,
+    max_difference: 3.0,
 };
 
 pub fn sigmoid(x: f64) -> f64 {

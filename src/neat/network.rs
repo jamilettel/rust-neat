@@ -8,8 +8,10 @@ use std::collections::HashMap;
 Network represents an individual, a network of nodes.
  */
 pub struct Network {
-    nodes: HashMap<u32, Node>,
-    genome: Genome,
+    pub nodes: HashMap<u32, Node>,
+    pub genome: Genome,
+    pub fitness: f64,
+    pub shared_fitness: f64,
 }
 
 impl Network {
@@ -18,6 +20,8 @@ impl Network {
         let mut network = Network {
             nodes: HashMap::new(),
             genome: genome.unwrap_or_else(|| Genome::new(n_inputs, n_outputs)),
+            fitness: 0.0,
+            shared_fitness: 0.0,
         }
         .build();
         network.compute_layers();
