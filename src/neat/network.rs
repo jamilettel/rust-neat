@@ -7,21 +7,25 @@ use std::collections::HashMap;
 /**
 Network represents an individual, a network of nodes.
  */
-pub struct Network {
+pub struct Network<'a> {
     pub nodes: HashMap<u32, Node>,
-    pub genome: Genome,
+    pub genome: &'a Genome,
     pub fitness: f64,
     pub shared_fitness: f64,
+    n_inputs: u32,
+    n_outputs: u32,
 }
 
-impl Network {
+impl<'a> Network<'a> {
     /// Creates a new Network using the genome
-    pub fn new(n_inputs: u32, n_outputs: u32, genome: Option<Genome>) -> Self {
+    pub fn new(genome: &'a Genome, n_inputs: u32, n_outputs: u32) -> Self {
         let mut network = Network {
             nodes: HashMap::new(),
-            genome: genome.unwrap_or_else(|| Genome::new(n_inputs, n_outputs)),
+            genome,
             fitness: 0.0,
             shared_fitness: 0.0,
+            n_inputs,
+            n_outputs,
         }
         .build();
         network.compute_layers();
@@ -30,17 +34,18 @@ impl Network {
 
     /// Builds the inputs and outputs, and then the rest of the network using the genome
     fn build(self) -> Self {
-        self.build_inputs_outputs().build_network()
+        self.build_inputs_outputs()
+            .build_network()
     }
 
     /// Creates the nodes of the network
     fn build_inputs_outputs(mut self) -> Self {
-        self.nodes.reserve((self.genome.get_total_nodes()) as usize);
+        self.nodes.reserve((self.genome.n_nodes) as usize);
         self.nodes.insert(0, Node::new(NodeType::BIAS, Some(0)));
-        for i in 1..=self.genome.n_inputs {
+        for i in 1..=self.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::INPUT, Some(0)));
         }
-        for i in self.genome.n_inputs + 1..=self.genome.n_outputs + self.genome.n_inputs {
+        for i in self.n_inputs + 1..=self.n_outputs + self.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::OUTPUT, None));
         }
         self
@@ -48,7 +53,7 @@ impl Network {
 
     /// Recursively sets the layers on the nodes in the network starting from the inputs
     fn compute_layers(&mut self) {
-        for input_id in 1..=self.genome.n_inputs {
+        for input_id in 1..=self.n_inputs {
             self.compute_layers_rec(input_id);
         }
     }
@@ -108,7 +113,7 @@ impl Network {
     We start by using computing the output nodes, and recursively computing everything else
     */
     pub fn compute(&mut self) {
-        for id in self.genome.n_inputs + 1..=self.genome.n_inputs + self.genome.n_outputs {
+        for id in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
             self.compute_rec(id, None);
         }
     }
@@ -133,7 +138,6 @@ impl Network {
         // add the node back to the map
         self.nodes.insert(id, node);
     }
-
 }
 
 #[cfg(test)]
@@ -142,7 +146,8 @@ mod tests {
 
     #[test]
     fn can_be_built() {
-        let network = Network::new(5, 5, None);
+        let genome = Genome::new(5, 5);
+        let network = Network::new(&genome, 5, 5);
         // 5 input + 5 output + 1 bias
         assert_eq!(network.nodes.len(), 11);
         assert_eq!(network.nodes[&0].node_type, NodeType::BIAS);

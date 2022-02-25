@@ -3,26 +3,25 @@ use super::{Gene, SETTINGS};
 #[derive(Clone)]
 pub struct Genome {
     pub genes: Vec<Gene>,
-    pub n_inputs: u32,
-    pub n_hidden: u32,
-    pub n_outputs: u32,
+    pub n_nodes: u32,
 }
 
+/// General genome functions
 impl Genome {
     pub fn new(n_inputs: u32, n_outputs: u32) -> Self {
         Genome {
             genes: Vec::new(),
-            n_hidden: 0,
-            n_inputs,
-            n_outputs,
+            n_nodes: n_inputs + n_outputs + 1, // inputs + ouputs + bias
         }
-        .build_genome()
+        .build_genome(n_inputs, n_outputs)
     }
 
-    pub fn build_genome(mut self) -> Self {
+    fn build_genome(mut self, n_inputs: u32, n_outputs: u32) -> Self {
         let mut historical_marking = 0;
-        for i in 1..=self.n_inputs {
-            for j in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
+
+        // we start at 1 because 0 is the bias node
+        for i in 1..=n_inputs {
+            for j in n_inputs + 1..=n_inputs + n_outputs {
                 self.genes.push(Gene {
                     enabled: true,
                     from: i,
@@ -36,10 +35,10 @@ impl Genome {
         self
     }
 
-    #[inline(always)]
-    pub fn get_total_nodes(&self) -> u32 {
-        // inputs + hidden + outputs + bias node
-        self.n_inputs + self.n_hidden + self.n_outputs + 1
+    pub fn mutate_weights(&mut self) {
+        //TODO
+        for gene in &mut self.genes {
+        }
     }
 }
 
@@ -76,7 +75,7 @@ impl Genome {
     }
 
     fn get_n(a: &Self, b: &Self) -> u32 {
-        let n = std::cmp::max(a.get_total_nodes(), b.get_total_nodes());
+        let n = std::cmp::max(a.n_nodes, b.n_nodes);
         if n <= unsafe { SETTINGS.small_genome_size } {
             1
         } else {
@@ -160,9 +159,7 @@ mod tests {
                 i += 1;
             }
         }
-        assert_eq!(genome.n_inputs, 5);
-        assert_eq!(genome.n_outputs, 6);
-        assert_eq!(genome.n_hidden, 0);
+        assert_eq!(genome.n_nodes, 5 + 6 + 1);
     }
 
     #[test]

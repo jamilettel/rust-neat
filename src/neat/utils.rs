@@ -5,6 +5,8 @@ pub struct Settings {
     pub similarity_c2: f64,
     pub similarity_c3: f64,
     pub max_difference: f64,
+    /// change of a weight being reassigned during a mutation
+    pub w_mut_reassign: f64,
 }
 
 pub static mut SETTINGS: Settings = Settings {
@@ -14,6 +16,7 @@ pub static mut SETTINGS: Settings = Settings {
     similarity_c2: 1.0,
     similarity_c3: 0.4,
     max_difference: 3.0,
+    w_mut_reassign: 0.1,
 };
 
 pub fn sigmoid(x: f64) -> f64 {

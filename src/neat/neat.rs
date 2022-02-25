@@ -1,6 +1,6 @@
 use std::fmt;
 use pyo3::*;
-use super::Network;
+use super::Genome;
 
 /**
 Main class.
@@ -8,9 +8,9 @@ This class allows you to train an AI.
  */
 #[pyclass]
 pub struct NEAT {
-    pop: Vec<Network>,
-    inputs: usize,
-    outputs: usize,
+    pop: Vec<Genome>,
+    n_inputs: usize,
+    n_outputs: usize,
 }
 
 impl fmt::Display for NEAT {
@@ -19,8 +19,8 @@ impl fmt::Display for NEAT {
             f,
             "[NEAT: {{pop_size: {}, inputs: {}, outputs: {}}}]",
             self.pop_size(),
-            self.inputs,
-            self.outputs
+            self.n_inputs,
+            self.n_outputs
         )
     }
 }
@@ -33,8 +33,8 @@ impl NEAT {
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
         NEAT {
             pop: Vec::new(),
-            inputs,
-            outputs,
+            n_inputs: inputs,
+            n_outputs: outputs,
         }.populate(pop_size)
     }
 
@@ -51,7 +51,7 @@ impl NEAT {
     fn populate(mut self, pop_size: usize) -> Self {
         self.pop.reserve(pop_size);
         for _ in 0..pop_size {
-            self.pop.push(Network::new(self.inputs as u32, self.outputs as u32, None));
+            self.pop.push(Genome::new(self.n_inputs as u32, self.n_outputs as u32));
         }
         self
     }
