@@ -1,5 +1,4 @@
 use super::{Gene, SETTINGS};
-use rand::prelude::*;
 
 #[derive(Clone)]
 pub struct Genome {
