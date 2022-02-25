@@ -10,8 +10,6 @@ Network represents an individual, a network of nodes.
 pub struct Network<'a> {
     pub nodes: HashMap<u32, Node>,
     pub genome: &'a Genome,
-    pub fitness: f64,
-    pub shared_fitness: f64,
     n_inputs: u32,
     n_outputs: u32,
 }
@@ -22,8 +20,6 @@ impl<'a> Network<'a> {
         let mut network = Network {
             nodes: HashMap::new(),
             genome,
-            fitness: 0.0,
-            shared_fitness: 0.0,
             n_inputs,
             n_outputs,
         }

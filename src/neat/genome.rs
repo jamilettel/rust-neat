@@ -1,9 +1,12 @@
 use super::{Gene, SETTINGS};
+use rand::prelude::*;
 
 #[derive(Clone)]
 pub struct Genome {
     pub genes: Vec<Gene>,
     pub n_nodes: u32,
+    pub fitness: f64,
+    pub adj_fitness: f64,
 }
 
 /// General genome functions
@@ -12,6 +15,8 @@ impl Genome {
         Genome {
             genes: Vec::new(),
             n_nodes: n_inputs + n_outputs + 1, // inputs + ouputs + bias
+            fitness: 0.0,
+            adj_fitness: 0.0,
         }
         .build_genome(n_inputs, n_outputs)
     }
@@ -36,8 +41,14 @@ impl Genome {
     }
 
     pub fn mutate_weights(&mut self) {
-        //TODO
         for gene in &mut self.genes {
+            let r: f64 = rand::random();
+            let w: f64 = (rand::random::<f64>() - 0.5) * 2.0; // w between -1 and 1
+            if r < unsafe { SETTINGS.w_mut_reassign } {
+                gene.weight = w * unsafe { SETTINGS.w_mut_reassign_max };
+            } else {
+                gene.weight += w * unsafe { SETTINGS.w_mut_change_max };
+            }
         }
     }
 }
