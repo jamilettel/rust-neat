@@ -159,7 +159,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_be_built() {
+    fn check_genes_on_build() {
         let genome = Genome::new(5, 6);
         let mut i = 0;
         for from in 1..=5 {

@@ -18,7 +18,7 @@ impl Species {
         }
     }
 
-    pub fn genome_belongs(&self, other: &Genome) -> bool {
+    pub fn belongs(&self, other: &Genome) -> bool {
         Genome::compute_difference(&self.rep_genome, other) < unsafe { SETTINGS.max_difference }
     }
 
@@ -27,4 +27,10 @@ impl Species {
         self.rep_genome = new_rep.clone();
         self
     }
+}
+
+#[cfg(test)]
+mod species_test {
+    // use super::*;
+
 }

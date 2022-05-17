@@ -70,18 +70,5 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn can_be_built() {
-        let _n: Node = Node {
-            node_type: NodeType::BIAS,
-            succ: Vec::new(),
-            pred: Vec::new(),
-            value: 0.1,
-            layer: 1,
-            compute_iteration: 0,
-        };
-        assert!(true);
-    }
+    // use super::*;
 }

@@ -30,8 +30,7 @@ impl<'a> Network<'a> {
 
     /// Builds the inputs and outputs, and then the rest of the network using the genome
     fn build(self) -> Self {
-        self.build_inputs_outputs()
-            .build_network()
+        self.build_inputs_outputs().build_network()
     }
 
     /// Creates the nodes of the network
@@ -141,7 +140,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_be_built() {
+    fn check_nodes_on_build() {
         let genome = Genome::new(5, 5);
         let network = Network::new(&genome, 5, 5);
         // 5 input + 5 output + 1 bias
