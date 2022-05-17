@@ -4,11 +4,12 @@ version = "0.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-# [lib]
-# name = "rust_neat"
-# crate-type = ["cdylib"]
+[lib]
+name = "rust_neat"
+crate-type = ["cdylib"]
 
 [dependencies]
+rand="0.8.5"
 
 [dependencies.pyo3]
 version = "0.15.1"

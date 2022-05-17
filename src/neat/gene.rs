@@ -5,7 +5,11 @@ Gene is a structural mutation that happened to a given
 */
 #[derive(Clone)]
 pub struct Gene {
-    pub historical_marking: u32,
+    /**
+    Historical Marking of the gene
+    This is an indication of when the gene was created
+    */
+    pub hm: u32,
     pub enabled: bool,
     pub from: u32,
     pub to: u32,
@@ -17,7 +21,7 @@ impl fmt::Display for Gene {
         write!(
             f,
             "[Gene {} ({}): from: {} -- w: {} --> to: {}]",
-            self.historical_marking,
+            self.hm,
             if self.enabled { "enabled" } else { "disabled" },
             self.from,
             self.weight,
