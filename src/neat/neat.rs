@@ -1,6 +1,7 @@
 use std::fmt;
 use pyo3::*;
 use super::Genome;
+use super::Species;
 
 /**
 Main class.
@@ -9,6 +10,7 @@ This class allows you to train an AI.
 #[pyclass]
 pub struct NEAT {
     pop: Vec<Genome>,
+    species: Vec<Species>,
     n_inputs: usize,
     n_outputs: usize,
 }
@@ -33,6 +35,7 @@ impl NEAT {
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
         NEAT {
             pop: Vec::new(),
+            species: Vec::new(),
             n_inputs: inputs,
             n_outputs: outputs,
         }.populate(pop_size)

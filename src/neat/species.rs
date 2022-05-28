@@ -3,16 +3,16 @@ use super::{Genome, SETTINGS};
 pub struct Species {
     /// Representative genome
     pub rep_genome: Genome,
-    pub id: u32,
+    id: u32,
     pub population: Vec<u32>,
     pub total_shared_fitness: f64,
 }
 
 impl Species {
-    pub fn new(rep_genome: &Genome) -> Self {
+    pub fn new(rep_genome: &Genome, id: u32) -> Self {
         Species {
             rep_genome: rep_genome.clone(),
-            id: 0,
+            id,
             population: Vec::new(),
             total_shared_fitness: 0.0,
         }
@@ -27,10 +27,18 @@ impl Species {
         self.rep_genome = new_rep.clone();
         self
     }
+
+    pub fn prep_new_generation(&mut self) {
+        self.population.clear();
+        self.total_shared_fitness = 0.0;
+    }
+
+    pub fn get_id(&self) -> u32 {
+        self.id
+    }
 }
 
 #[cfg(test)]
 mod species_test {
     // use super::*;
-
 }
