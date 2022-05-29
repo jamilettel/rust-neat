@@ -1,11 +1,37 @@
-use super::{Gene, SETTINGS};
+use super::{Gene, SETTINGS, Network};
 
-#[derive(Clone)]
 pub struct Genome {
     pub genes: Vec<Gene>,
     pub n_nodes: u32,
+    n_inputs: u32,
+    n_outputs: u32,
     pub fitness: f64,
     pub adj_fitness: f64,
+    network: Option<Network>,
+}
+
+impl Clone for Genome {
+    fn clone(&self) -> Self {
+        Genome {
+            genes: self.genes.clone(),
+            n_nodes: self.n_nodes,
+            n_inputs: self.n_inputs,
+            n_outputs: self.n_outputs,
+            fitness: 0.0,
+            adj_fitness: 0.0,
+            network: None,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        self.genes.clone_from(&source.genes);
+        self.n_nodes = source.n_nodes;
+        self.n_inputs = source.n_inputs;
+        self.n_outputs = source.n_outputs;
+        self.fitness = 0.0;
+        self.adj_fitness = 0.0;
+        self.network.take();
+    }
 }
 
 /// General genome functions
@@ -14,18 +40,21 @@ impl Genome {
         Genome {
             genes: Vec::new(),
             n_nodes: n_inputs + n_outputs + 1, // inputs + ouputs + bias
+            n_inputs,
+            n_outputs,
             fitness: 0.0,
             adj_fitness: 0.0,
+            network: None,
         }
-        .build_genome(n_inputs, n_outputs)
+        .build_genome()
     }
 
-    fn build_genome(mut self, n_inputs: u32, n_outputs: u32) -> Self {
+    fn build_genome(mut self) -> Self {
         let mut historical_marking = 0;
 
         // we start at 1 because 0 is the bias node
-        for i in 1..=n_inputs {
-            for j in n_inputs + 1..=n_inputs + n_outputs {
+        for i in 1..=self.n_inputs {
+            for j in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
                 self.genes.push(Gene {
                     enabled: true,
                     from: i,
@@ -39,6 +68,16 @@ impl Genome {
         self
     }
 
+    pub fn get_network(&mut self) -> &Network {
+        if self.network.is_none() {
+            self.network = Some(Network::new(&self, self.n_inputs, self.n_outputs));
+        }
+        self.network.as_ref().unwrap()
+    }
+}
+
+/// Mutate weights
+impl Genome {
     pub fn mutate_weights(&mut self) {
         for gene in &mut self.genes {
             let r: f64 = rand::random();
@@ -50,6 +89,11 @@ impl Genome {
             }
         }
     }
+}
+
+/// Mutate add link
+impl Genome {
+    
 }
 
 /// This impl block contains code for computing differences

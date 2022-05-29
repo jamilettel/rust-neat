@@ -7,35 +7,33 @@ use std::collections::HashMap;
 /**
 Network represents an individual, a network of nodes.
  */
-pub struct Network<'a> {
+pub struct Network {
     pub nodes: HashMap<u32, Node>,
-    pub genome: &'a Genome,
     n_inputs: u32,
     n_outputs: u32,
 }
 
-impl<'a> Network<'a> {
+impl Network {
     /// Creates a new Network using the genome
-    pub fn new(genome: &'a Genome, n_inputs: u32, n_outputs: u32) -> Self {
+    pub fn new(genome: &Genome, n_inputs: u32, n_outputs: u32) -> Self {
         let mut network = Network {
             nodes: HashMap::new(),
-            genome,
             n_inputs,
             n_outputs,
         }
-        .build();
+        .build(genome);
         network.compute_layers();
         network
     }
 
     /// Builds the inputs and outputs, and then the rest of the network using the genome
-    fn build(self) -> Self {
-        self.build_inputs_outputs().build_network()
+    fn build(self, genome: &Genome) -> Self {
+        self.build_inputs_outputs(genome).build_network(genome)
     }
 
     /// Creates the nodes of the network
-    fn build_inputs_outputs(mut self) -> Self {
-        self.nodes.reserve((self.genome.n_nodes) as usize);
+    fn build_inputs_outputs(mut self, genome: &Genome) -> Self {
+        self.nodes.reserve((genome.n_nodes) as usize);
         self.nodes.insert(0, Node::new(NodeType::BIAS, Some(0)));
         for i in 1..=self.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::INPUT, Some(0)));
@@ -71,15 +69,15 @@ impl<'a> Network<'a> {
     }
 
     /// Creates the hidden nodes and links all the nodes using the genome
-    fn build_network(mut self) -> Self {
-        for i in 0..self.genome.genes.len() {
-            if !self.genome.genes[i].enabled {
+    fn build_network(mut self, genome: &Genome) -> Self {
+        for i in 0..genome.genes.len() {
+            if !genome.genes[i].enabled {
                 continue;
             }
 
-            let from = self.genome.genes[i].from;
-            let to = self.genome.genes[i].to;
-            let weight = self.genome.genes[i].weight;
+            let from = genome.genes[i].from;
+            let to = genome.genes[i].to;
+            let weight = genome.genes[i].weight;
             self.get_or_create_node(from).add_link_to(to);
             self.get_or_create_node(to).add_link_from(from, weight);
         }
