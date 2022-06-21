@@ -1,7 +1,7 @@
-use std::fmt;
-use pyo3::*;
 use super::Genome;
 use super::Species;
+use pyo3::*;
+use std::fmt;
 
 /**
 Main class.
@@ -13,6 +13,7 @@ pub struct NEAT {
     species: Vec<Species>,
     n_inputs: usize,
     n_outputs: usize,
+    genome_next_id: u32,
 }
 
 impl fmt::Display for NEAT {
@@ -29,7 +30,6 @@ impl fmt::Display for NEAT {
 
 #[pymethods]
 impl NEAT {
-
     #[new]
     #[args(pop_size, inputs, outputs)]
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
@@ -38,7 +38,9 @@ impl NEAT {
             species: Vec::new(),
             n_inputs: inputs,
             n_outputs: outputs,
-        }.populate(pop_size)
+            genome_next_id: 0,
+        }
+        .populate(pop_size)
     }
 
     pub fn pop_size(&self) -> usize {
@@ -51,10 +53,20 @@ impl NEAT {
 }
 
 impl NEAT {
+    fn get_next_genome_id(&mut self) -> u32 {
+        self.genome_next_id += 1;
+        self.genome_next_id - 1
+    }
+
     fn populate(mut self, pop_size: usize) -> Self {
         self.pop.reserve(pop_size);
         for _ in 0..pop_size {
-            self.pop.push(Genome::new(self.n_inputs as u32, self.n_outputs as u32));
+            let next_genome_id = self.get_next_genome_id();
+            self.pop.push(Genome::new(
+                next_genome_id,
+                self.n_inputs as u32,
+                self.n_outputs as u32,
+            ));
         }
         self
     }

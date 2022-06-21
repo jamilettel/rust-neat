@@ -1,6 +1,7 @@
 use super::{Gene, LinkTo, Network, SETTINGS};
 
 pub struct Genome {
+    pub id: u32,
     pub genes: Vec<Gene>,
     pub n_nodes: u32,
     n_inputs: u32,
@@ -15,6 +16,7 @@ static MAX_TRIES_MUTATIONS: i32 = 10;
 impl Clone for Genome {
     fn clone(&self) -> Self {
         Genome {
+            id: self.id,
             genes: self.genes.clone(),
             n_nodes: self.n_nodes,
             n_inputs: self.n_inputs,
@@ -26,6 +28,7 @@ impl Clone for Genome {
     }
 
     fn clone_from(&mut self, source: &Self) {
+        self.id = source.id;
         self.genes.clone_from(&source.genes);
         self.n_nodes = source.n_nodes;
         self.n_inputs = source.n_inputs;
@@ -38,8 +41,9 @@ impl Clone for Genome {
 
 /// General genome functions
 impl Genome {
-    pub fn new(n_inputs: u32, n_outputs: u32) -> Self {
+    pub fn new(id: u32, n_inputs: u32, n_outputs: u32) -> Self {
         Genome {
+            id,
             genes: Vec::new(),
             n_nodes: n_inputs + n_outputs + 1, // inputs + ouputs + bias
             n_inputs,
@@ -301,7 +305,7 @@ mod tests {
 
     #[test]
     fn check_genes_on_build() {
-        let genome = Genome::new(5, 6);
+        let genome = Genome::new(0, 5, 6);
         let mut i = 0;
         for from in 1..=5 {
             for to in 6..=11 {
@@ -315,8 +319,8 @@ mod tests {
 
     #[test]
     fn compute_difference() {
-        let mut g1 = Genome::new(2, 2);
-        let mut g2 = Genome::new(2, 2);
+        let mut g1 = Genome::new(0, 2, 2);
+        let mut g2 = Genome::new(1, 2, 2);
 
         assert_eq!(Genome::compute_difference(&g1, &g2), 0.0);
 
@@ -351,7 +355,7 @@ mod tests {
 
     #[test]
     fn get_linkable_nodes_basic() {
-        let mut g1 = Genome::new(5, 5);
+        let mut g1 = Genome::new(0, 5, 5);
 
         let nodes = g1.get_linkable_nodes(None);
         assert!(nodes.is_some());
@@ -363,7 +367,7 @@ mod tests {
     #[test]
     fn get_linkable_nodes_advanced() {
         for _ in 0..10 {
-            let mut g1 = Genome::new(5, 5);
+            let mut g1 = Genome::new(0, 5, 5);
 
             for i in 117..200 {
                 g1.genes.push(Gene {

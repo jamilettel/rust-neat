@@ -8,7 +8,7 @@ mod neat;
 fn main(){
     // let mut g1 = Genome::new(2, 2);
     // let mut g2 = Genome::new(2, 2);
-    let mut g1 = Genome::new(5, 5);
+    let mut g1 = Genome::new(0, 5, 5);
 
     for i in 17..100 {
         g1.genes.push(Gene {

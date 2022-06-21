@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn check_nodes_on_build() {
-        let genome = Genome::new(5, 5);
+        let genome = Genome::new(0, 5, 5);
         let network = Network::new(&genome, 5, 5);
         // 5 input + 5 output + 1 bias
         assert_eq!(network.nodes.len(), 11);
