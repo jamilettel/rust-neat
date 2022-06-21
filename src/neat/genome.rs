@@ -150,7 +150,11 @@ impl Genome {
         let mut nb_linkable_nodes = 0;
 
         for ele in self.get_network().nodes.iter() {
-            if ele.1.layer >= min_layer && !self.get_network().nodes[&from].succ.contains(&LinkTo { to: *ele.0 }) {
+            if ele.1.layer >= min_layer
+                && !self.get_network().nodes[&from]
+                    .succ
+                    .contains(&LinkTo { to: *ele.0 })
+            {
                 nb_linkable_nodes += 1;
             }
         }
@@ -162,16 +166,30 @@ impl Genome {
         let mut pos_linkable_node = rand::random::<u32>() % nb_linkable_nodes;
 
         for ele in self.get_network().nodes.iter() {
-            if ele.1.layer >= min_layer && !self.get_network().nodes[&from].succ.contains(&LinkTo { to: *ele.0 }) {
+            if ele.1.layer >= min_layer
+                && !self.get_network().nodes[&from]
+                    .succ
+                    .contains(&LinkTo { to: *ele.0 })
+            {
                 if pos_linkable_node == 0 {
-                    // println!("From: {}, to: {}", from, ele.0);
-                    return Some((from, *ele.0));
+                    return Some((from, *ele.0))
                 }
                 pos_linkable_node -= 1;
             }
         }
 
         return self.get_linkable_nodes(Some(tries - 1));
+    }
+
+    pub fn get_linked_nodes(&mut self) -> Option<(u32, u32)> {
+        let gene_nb = rand::random::<usize>() % self.genes.len();
+        for i in 0..self.genes.len() {
+            let gene = &self.genes[(gene_nb + i) % self.genes.len()];
+            if gene.enabled == true {
+                return Some((gene.from, gene.to));
+            }
+        }
+        None
     }
 }
 
