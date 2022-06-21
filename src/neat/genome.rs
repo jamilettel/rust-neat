@@ -1,4 +1,4 @@
-use super::{Gene, Network, SETTINGS};
+use super::{Gene, LinkTo, Network, SETTINGS};
 
 pub struct Genome {
     pub genes: Vec<Gene>,
@@ -111,14 +111,14 @@ impl Genome {
 
 /// Adding links & nodes
 impl Genome {
-
     /// Returns the Nth node's ID
     pub fn get_nth_node(&self, node_order: u32) -> u32 {
         // cases where node is: input || output || bias
         if node_order < 1 + self.n_inputs + self.n_outputs {
             return node_order;
         }
-        let mut node_order = node_order - self.n_inputs - 1 - self.n_outputs;
+        let mut node_order: i32 =
+            node_order as i32 - self.n_inputs as i32 - 1 - self.n_outputs as i32;
         for node in self.get_network().nodes.iter() {
             if node.0 < &(1 + self.n_inputs + self.n_outputs) {
                 continue;
@@ -128,7 +128,7 @@ impl Genome {
                 return *node.0;
             }
         }
-        node_order
+        node_order.try_into().unwrap_or(0)
     }
 
     /**
@@ -138,28 +138,42 @@ impl Genome {
     pub fn get_linkable_nodes(&mut self, tries: Option<i32>) -> Option<(u32, u32)> {
         self.build_network();
         let tries = tries.unwrap_or(MAX_TRIES_MUTATIONS);
-        let mut subtries = MAX_TRIES_MUTATIONS;
         let mut from = rand::random::<u32>() % (self.n_nodes - self.n_outputs); // can't link from outputs
         if from > self.n_inputs {
             from += self.n_outputs;
         }
         from = self.get_nth_node(from);
-        println!("FROM: {}", from);
-        let min_layer = self.get_network().nodes[&from].layer;
-        let mut to: u32;
-        while {
-            if subtries <= 0 {
-                if tries <= 0 {
-                    return None;
-                }
-                return self.get_linkable_nodes(Some(tries - 1));
+        let mut min_layer = self.get_network().nodes[&from].layer;
+        if min_layer == 0 {
+            min_layer = 1;
+        }
+        let mut nb_linkable_nodes = 0;
+
+        
+
+        for ele in self.get_network().nodes.iter() {
+            if ele.1.layer >= min_layer && !self.get_network().nodes[&from].succ.contains(&LinkTo { to: *ele.0 }) {
+                nb_linkable_nodes += 1;
             }
-            subtries -= 1;
-            to = self.get_nth_node(rand::random::<u32>() % (self.n_nodes - self.n_inputs - 1) + self.n_inputs + 1); // bias + inputs
-            println!("TO: {}", to);
-            self.get_network().nodes[&to].layer < min_layer && to != from
-        } {}
-        Some((from, to))
+        }
+
+        if nb_linkable_nodes == 0 {
+            return self.get_linkable_nodes(Some(tries - 1));
+        }
+
+        let mut pos_linkable_node = rand::random::<u32>() % nb_linkable_nodes;
+
+        for ele in self.get_network().nodes.iter() {
+            if ele.1.layer >= min_layer && !self.get_network().nodes[&from].succ.contains(&LinkTo { to: *ele.0 }) {
+                if pos_linkable_node == 0 {
+                    // println!("From: {}, to: {}", from, ele.0);
+                    return Some((from, *ele.0));
+                }
+                pos_linkable_node -= 1;
+            }
+        }
+
+        return self.get_linkable_nodes(Some(tries - 1));
     }
 }
 

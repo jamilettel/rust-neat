@@ -4,6 +4,7 @@ pub struct LinkFrom {
     pub weight: f64,
 }
 
+#[derive(PartialEq, Eq)]
 pub struct LinkTo {
     pub to: u32,
 }

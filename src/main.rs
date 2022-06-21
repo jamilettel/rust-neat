@@ -28,11 +28,19 @@ fn main(){
         });
     }
 
+    g1.build_network();
     g1.get_network();
 
-    let nodes = g1.get_linkable_nodes(None);
-    let nodes = nodes.unwrap();
-    println!("{}, {}", nodes.0, nodes.1);
+    for _ in 0..100 {
+        loop {
+            let nodes = g1.get_linkable_nodes(None).unwrap();
+            if nodes.0 > 6 {
+                continue;
+            }
+            println!("{}, {}", nodes.0, nodes.1);
+            break;
+        }
+    }
 
     // g2.genes.push(Gene {
     //     enabled: true,

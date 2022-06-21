@@ -46,7 +46,7 @@ impl Network {
 
     /// Recursively sets the layers on the nodes in the network starting from the inputs
     fn compute_layers(&mut self) {
-        for input_id in 1..=self.n_inputs {
+        for input_id in 0..=self.n_inputs {
             self.compute_layers_rec(input_id);
         }
     }
@@ -55,17 +55,18 @@ impl Network {
     fn compute_layers_rec(&mut self, id: u32) {
         // remove the node so that we don't have to fetch it each time
         // this won't be a problem since we only go deeper into the layers
-        let node = self.nodes.remove(&id).unwrap();
-        let layer = node.layer;
-        for succ in &node.succ {
-            let next_layer = &mut self.nodes.get_mut(&succ.to).unwrap().layer;
-            if *next_layer <= layer {
-                *next_layer = layer + 1;
-                self.compute_layers_rec(succ.to);
+        if let Some(node) = self.nodes.remove(&id) {
+            let layer = node.layer;
+            for succ in &node.succ {
+                let next_layer = &mut self.nodes.get_mut(&succ.to).unwrap().layer;
+                if *next_layer <= layer {
+                    *next_layer = layer + 1;
+                    self.compute_layers_rec(succ.to);
+                }
             }
+            // add the node back to the map
+            self.nodes.insert(id, node);
         }
-        // add the node back to the map
-        self.nodes.insert(id, node);
     }
 
     /// Creates the hidden nodes and links all the nodes using the genome
