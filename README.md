@@ -1,4 +1,5 @@
 # Rust NEAT
+Still in development
 
 ## How to compile
 

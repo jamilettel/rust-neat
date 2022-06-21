@@ -149,8 +149,6 @@ impl Genome {
         }
         let mut nb_linkable_nodes = 0;
 
-        
-
         for ele in self.get_network().nodes.iter() {
             if ele.1.layer >= min_layer && !self.get_network().nodes[&from].succ.contains(&LinkTo { to: *ele.0 }) {
                 nb_linkable_nodes += 1;
