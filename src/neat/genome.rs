@@ -1,4 +1,4 @@
-use super::{Gene, SETTINGS, Network};
+use super::{Gene, Network, SETTINGS};
 
 pub struct Genome {
     pub genes: Vec<Gene>,
@@ -7,8 +7,10 @@ pub struct Genome {
     n_outputs: u32,
     pub fitness: f64,
     pub adj_fitness: f64,
-    network: Option<Network>,
+    pub network: Option<Network>,
 }
+
+static MAX_TRIES_MUTATIONS: i32 = 10;
 
 impl Clone for Genome {
     fn clone(&self) -> Self {
@@ -68,17 +70,32 @@ impl Genome {
         self
     }
 
-    pub fn get_network(&mut self) -> &Network {
+    pub fn build_network(&mut self) {
         if self.network.is_none() {
             self.network = Some(Network::new(&self, self.n_inputs, self.n_outputs));
+            self.n_nodes = self
+                .network
+                .as_ref()
+                .unwrap()
+                .nodes
+                .len()
+                .try_into()
+                .unwrap();
         }
+    }
+
+    pub fn get_network(&self) -> &Network {
         self.network.as_ref().unwrap()
     }
 }
 
 /// Mutate weights
 impl Genome {
-    pub fn mutate_weights(&mut self) {
+    /**
+    Mutates the genome's weights.
+    Always returns true
+    */
+    pub fn mutate_weights(&mut self) -> bool {
         for gene in &mut self.genes {
             let r: f64 = rand::random();
             let w: f64 = (rand::random::<f64>() - 0.5) * 2.0; // w between -1 and 1
@@ -88,12 +105,62 @@ impl Genome {
                 gene.weight += w * unsafe { SETTINGS.w_mut_change_max };
             }
         }
+        true
     }
 }
 
-/// Mutate add link
+/// Adding links & nodes
 impl Genome {
-    
+
+    /// Returns the Nth node's ID
+    pub fn get_nth_node(&self, node_order: u32) -> u32 {
+        // cases where node is: input || output || bias
+        if node_order < 1 + self.n_inputs + self.n_outputs {
+            return node_order;
+        }
+        let mut node_order = node_order - self.n_inputs - 1 - self.n_outputs;
+        for node in self.get_network().nodes.iter() {
+            if node.0 < &(1 + self.n_inputs + self.n_outputs) {
+                continue;
+            }
+            node_order -= 1;
+            if node_order == 0 {
+                return *node.0;
+            }
+        }
+        node_order
+    }
+
+    /**
+    Returns two linkable nodes, or None if tries run out.
+    Call this function with `tries` as None.
+    */
+    pub fn get_linkable_nodes(&mut self, tries: Option<i32>) -> Option<(u32, u32)> {
+        self.build_network();
+        let tries = tries.unwrap_or(MAX_TRIES_MUTATIONS);
+        let mut subtries = MAX_TRIES_MUTATIONS;
+        let mut from = rand::random::<u32>() % (self.n_nodes - self.n_outputs); // can't link from outputs
+        if from > self.n_inputs {
+            from += self.n_outputs;
+        }
+        from = self.get_nth_node(from);
+        println!("FROM: {}", from);
+        let min_layer = self.get_network().nodes[&from].layer;
+        let mut to: u32;
+        while {
+            if subtries <= 0 {
+                if tries <= 0 {
+                    return None;
+                }
+                return self.get_linkable_nodes(Some(tries - 1));
+            }
+            subtries -= 1;
+            to = self.get_nth_node(rand::random::<u32>() % (self.n_nodes - self.n_inputs - 1) + self.n_inputs + 1); // bias + inputs
+            println!("TO: {}", to);
+            self.get_network().nodes[&to].layer < min_layer && to != from
+        } {}
+        Some((from, to))
+    }
 }
 
 /// This impl block contains code for computing differences
@@ -250,5 +317,49 @@ mod tests {
         assert_eq!(Genome::compute_difference(&g1, &g2), unsafe {
             SETTINGS.similarity_c1 + SETTINGS.similarity_c2
         });
+    }
+
+    #[test]
+    fn get_linkable_nodes_basic() {
+        let mut g1 = Genome::new(5, 5);
+
+        let nodes = g1.get_linkable_nodes(None);
+        assert!(nodes.is_some());
+        let nodes = nodes.unwrap();
+        assert!(nodes.0 != nodes.1);
+        assert!(nodes.0 < nodes.1); // this is okay because genome only has inputs and outputs
+    }
+
+    #[test]
+    fn get_linkable_nodes_advanced() {
+        for _ in 0..10 {
+            let mut g1 = Genome::new(5, 5);
+
+            for i in 117..200 {
+                g1.genes.push(Gene {
+                    enabled: true,
+                    from: 0,
+                    to: i,
+                    hm: i,
+                    weight: 0.1,
+                });
+
+                g1.genes.push(Gene {
+                    enabled: true,
+                    from: i,
+                    to: 7,
+                    hm: i * 2,
+                    weight: 0.1,
+                });
+            }
+
+            let nodes = g1.get_linkable_nodes(None);
+            assert!(nodes.is_some());
+            let nodes = nodes.unwrap();
+            assert!(nodes.0 != nodes.1);
+            let layer1 = g1.network.as_ref().unwrap().nodes[&nodes.0].layer;
+            let layer2 = g1.network.as_ref().unwrap().nodes[&nodes.1].layer;
+            assert!(layer1 <= layer2);
+        }
     }
 }
