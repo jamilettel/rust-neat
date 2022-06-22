@@ -14,13 +14,15 @@ pub struct NEAT {
     n_inputs: usize,
     n_outputs: usize,
     genome_next_id: u32,
+    gen: i32,
 }
 
 impl fmt::Display for NEAT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "[NEAT: {{pop_size: {}, inputs: {}, outputs: {}}}]",
+            "[NEAT: {{gen: {}, pop_size: {}, inputs: {}, outputs: {}}}]",
+            self.gen,
             self.pop_size(),
             self.n_inputs,
             self.n_outputs
@@ -39,6 +41,7 @@ impl NEAT {
             n_inputs: inputs,
             n_outputs: outputs,
             genome_next_id: 0,
+            gen: 0,
         }
         .populate(pop_size)
     }
