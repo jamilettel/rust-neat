@@ -4,13 +4,24 @@ use super::Node;
 use super::NodeType;
 use std::collections::HashMap;
 
-/**
-Network represents an individual, a network of nodes.
- */
+/// Network represents an individual, a network of nodes.
 pub struct Network {
     pub nodes: HashMap<u32, Node>,
     n_inputs: u32,
     n_outputs: u32,
+}
+
+impl Clone for Network {
+    fn clone(&self) -> Self {
+        let mut map: HashMap<u32, Node> = HashMap::new();
+        map.clone_from(&self.nodes);
+
+        Network {
+            n_inputs: self.n_inputs,
+            n_outputs: self.n_outputs,
+            nodes: map,
+        }
+    }
 }
 
 impl Network {
@@ -35,6 +46,8 @@ impl Network {
     fn build_inputs_outputs(mut self, genome: &Genome) -> Self {
         self.nodes.reserve((genome.n_nodes) as usize);
         self.nodes.insert(0, Node::new(NodeType::BIAS, Some(0)));
+        // bias node's value is always set to 1
+        self.nodes.get_mut(&0).unwrap().value = 1.0;
         for i in 1..=self.n_inputs {
             self.nodes.insert(i, Node::new(NodeType::INPUT, Some(0)));
         }
@@ -120,17 +133,33 @@ impl Network {
 
         // no need to recompute (or is an input/bias), we use the value stored in the node
         if compute_iteration > node.compute_iteration && !node.pred.is_empty() {
-            for succ in &node.succ {
-                if self.nodes.get(&succ.to).unwrap().compute_iteration < compute_iteration {
-                    self.compute_rec(succ.to, compute_it);
+            node.value = 0.0;
+            for pred in &node.pred {
+                if self.nodes.get(&pred.from).unwrap().compute_iteration < compute_iteration {
+                    self.compute_rec(pred.from, compute_it);
                 }
-                node.value += self.nodes.get(&succ.to).unwrap().value;
+                let pred_value = self.nodes.get(&pred.from).unwrap().value;
+                node.value += pred_value * pred.weight;
             }
             node.compute_iteration = compute_iteration;
             node.value = sigmoid(node.value);
         }
         // add the node back to the map
         self.nodes.insert(id, node);
+    }
+
+    pub fn set_inputs(&mut self, inputs: Vec<f64>) {
+        for i in 1..=self.n_inputs {
+            self.nodes.get_mut(&i).unwrap().value = inputs[(i - 1) as usize];
+        }
+    }
+
+    pub fn get_outputs(&self) -> Vec<f64> {
+        let mut outputs: Vec<f64> = Vec::new();
+        for i in self.n_inputs + 1..=self.n_inputs + self.n_outputs {
+            outputs.push(self.nodes[&i].value);
+        }
+        outputs
     }
 }
 

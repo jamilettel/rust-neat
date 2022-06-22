@@ -2,7 +2,7 @@ use super::LinkFrom;
 use super::LinkTo;
 use std::fmt;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum NodeType {
     BIAS,
     INPUT,
@@ -25,8 +25,9 @@ impl fmt::Display for NodeType {
     }
 }
 
+#[derive(Clone)]
 /**
-# Defines a node in the Neural Network
+ * Defines a node in the Neural Network
 */
 pub struct Node {
     pub node_type: NodeType,

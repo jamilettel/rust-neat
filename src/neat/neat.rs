@@ -23,7 +23,7 @@ impl fmt::Display for NEAT {
             f,
             "[NEAT: {{gen: {}, pop_size: {}, inputs: {}, outputs: {}}}]",
             self.gen,
-            self.pop_size(),
+            self.pop.len(),
             self.n_inputs,
             self.n_outputs
         )
@@ -44,14 +44,30 @@ impl NEAT {
             gen: 0,
         }
         .populate(pop_size)
-    }
-
-    pub fn pop_size(&self) -> usize {
-        self.pop.len()
+        .mutate_initial_pop()
     }
 
     fn __str__(&self) -> String {
         format!("{}", self)
+    }
+
+    #[args(fitness_func)]
+    fn run_one_gen(&mut self, fitness_function: PyObject) {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        for i in 0..self.pop.len() {
+            let genome = PyCell::new(py, self.pop.remove(i)).unwrap();
+            let fitness: f64;
+            {
+                let genome_ref = genome.borrow_mut();
+                fitness = fitness_function.call1(py, (genome_ref,)).unwrap().extract(py).unwrap();
+            }
+            let mut genome: Genome = genome.extract().unwrap();
+            genome.fitness = fitness;
+            self.pop.insert(i, genome);
+        }
+
+        self.gen += 1;
     }
 }
 
@@ -70,6 +86,14 @@ impl NEAT {
                 self.n_inputs as u32,
                 self.n_outputs as u32,
             ));
+        }
+        self
+    }
+
+    /// This function is only used to mutate the initial population, don't user otherwise
+    fn mutate_initial_pop(mut self) -> Self {
+        for genome in &mut self.pop {
+            genome.mutate_weights();
         }
         self
     }

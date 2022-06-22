@@ -1,5 +1,9 @@
-use super::{Gene, LinkTo, Network, SETTINGS};
+use core::fmt;
 
+use super::{Gene, LinkTo, Network, SETTINGS};
+use pyo3::*;
+
+#[pyclass]
 pub struct Genome {
     pub id: u32,
     pub genes: Vec<Gene>,
@@ -13,6 +17,31 @@ pub struct Genome {
 
 static MAX_TRIES_MUTATIONS: i32 = 10;
 
+impl fmt::Display for Genome {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "[Genome: {{ id: {}, fitness: {}, adj_fitness: {} }}]",
+            self.id, self.fitness, self.adj_fitness
+        )
+    }
+}
+
+#[pymethods]
+impl Genome {
+    fn __str__(&self) -> String {
+        format!("{}", self)
+    }
+
+    pub fn compute(&mut self, inputs: Vec<f64>) -> Vec<f64> {
+        self.build_network();
+        let network = self.get_network_mut();
+        network.set_inputs(inputs);
+        network.compute();
+        network.get_outputs()
+    }
+}
+
 impl Clone for Genome {
     fn clone(&self) -> Self {
         Genome {
@@ -23,19 +52,8 @@ impl Clone for Genome {
             n_outputs: self.n_outputs,
             fitness: 0.0,
             adj_fitness: 0.0,
-            network: None,
+            network: self.network.clone(),
         }
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        self.id = source.id;
-        self.genes.clone_from(&source.genes);
-        self.n_nodes = source.n_nodes;
-        self.n_inputs = source.n_inputs;
-        self.n_outputs = source.n_outputs;
-        self.fitness = 0.0;
-        self.adj_fitness = 0.0;
-        self.network.take();
     }
 }
 
@@ -74,7 +92,7 @@ impl Genome {
         self
     }
 
-    pub fn build_network(&mut self) {
+    fn build_network(&mut self) {
         if self.network.is_none() {
             self.network = Some(Network::new(&self, self.n_inputs, self.n_outputs));
             self.n_nodes = self
@@ -88,7 +106,11 @@ impl Genome {
         }
     }
 
-    pub fn get_network(&self) -> &Network {
+    fn get_network_mut(&mut self) -> &mut Network {
+        self.network.as_mut().unwrap()
+    }
+
+    fn get_network(&self) -> &Network {
         self.network.as_ref().unwrap()
     }
 }
@@ -176,7 +198,7 @@ impl Genome {
                     .contains(&LinkTo { to: *ele.0 })
             {
                 if pos_linkable_node == 0 {
-                    return Some((from, *ele.0))
+                    return Some((from, *ele.0));
                 }
                 pos_linkable_node -= 1;
             }

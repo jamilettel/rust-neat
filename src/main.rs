@@ -28,8 +28,8 @@ fn main(){
         });
     }
 
-    g1.build_network();
-    g1.get_network();
+    // g1.build_network();
+    // g1.get_network();
 
     for _ in 0..100 {
         loop {
