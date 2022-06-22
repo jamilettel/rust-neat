@@ -4,8 +4,8 @@ use pyo3::*;
 use std::fmt;
 
 /**
-Main class.
-This class allows you to train an AI.
+ * Main class.
+ * This class allows you to train an AI.
  */
 #[pyclass]
 pub struct NEAT {
@@ -14,7 +14,8 @@ pub struct NEAT {
     n_inputs: usize,
     n_outputs: usize,
     genome_next_id: u32,
-    gen: i32,
+    species_next_id: u32,
+    generation: i32,
 }
 
 impl fmt::Display for NEAT {
@@ -22,7 +23,7 @@ impl fmt::Display for NEAT {
         write!(
             f,
             "[NEAT: {{gen: {}, pop_size: {}, inputs: {}, outputs: {}}}]",
-            self.gen,
+            self.generation,
             self.pop.len(),
             self.n_inputs,
             self.n_outputs
@@ -35,16 +36,21 @@ impl NEAT {
     #[new]
     #[args(pop_size, inputs, outputs)]
     pub fn new(pop_size: usize, inputs: usize, outputs: usize) -> Self {
-        NEAT {
+        let mut neat = NEAT {
             pop: Vec::new(),
             species: Vec::new(),
             n_inputs: inputs,
             n_outputs: outputs,
             genome_next_id: 0,
-            gen: 0,
+            species_next_id: 0,
+            generation: 0,
         }
         .populate(pop_size)
-        .mutate_initial_pop()
+        .mutate_initial_pop();
+
+        neat.compute_species();
+
+        neat
     }
 
     fn __str__(&self) -> String {
@@ -60,14 +66,18 @@ impl NEAT {
             let fitness: f64;
             {
                 let genome_ref = genome.borrow_mut();
-                fitness = fitness_function.call1(py, (genome_ref,)).unwrap().extract(py).unwrap();
+                fitness = fitness_function
+                    .call1(py, (genome_ref,))
+                    .unwrap()
+                    .extract(py)
+                    .unwrap();
             }
             let mut genome: Genome = genome.extract().unwrap();
             genome.fitness = fitness;
             self.pop.insert(i, genome);
         }
 
-        self.gen += 1;
+        self.generation += 1;
     }
 }
 
@@ -96,5 +106,14 @@ impl NEAT {
             genome.mutate_weights();
         }
         self
+    }
+
+    fn compute_species(&mut self) {
+        for species in &mut self.species {
+            species.prep_new_generation();
+        }
+        for i in 0..self.pop.len() {
+            
+        }
     }
 }
