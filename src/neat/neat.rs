@@ -48,7 +48,7 @@ impl NEAT {
         .populate(pop_size)
         .mutate_initial_pop();
 
-        neat.compute_species();
+        neat.compute_new_pop_species();
 
         neat
     }
@@ -58,7 +58,7 @@ impl NEAT {
     }
 
     #[args(fitness_func)]
-    fn run_one_gen(&mut self, fitness_function: PyObject) {
+    pub fn run_one_gen(&mut self, fitness_function: PyObject) {
         let gil = Python::acquire_gil();
         let py = gil.python();
         for i in 0..self.pop.len() {
@@ -79,12 +79,29 @@ impl NEAT {
 
         self.generation += 1;
     }
+
+    pub fn print_species_info(&self) {
+        println!("N° of Species {}", self.species.len());
+        for species in &self.species {
+            println!(
+                "Species id: {}, population: {}",
+                species.get_id(),
+                species.population.len()
+            );
+        }
+    }
 }
 
+/// General utils
 impl NEAT {
     fn get_next_genome_id(&mut self) -> u32 {
         self.genome_next_id += 1;
         self.genome_next_id - 1
+    }
+
+    fn get_next_species_id(&mut self) -> u32 {
+        self.species_next_id += 1;
+        self.species_next_id - 1
     }
 
     fn populate(mut self, pop_size: usize) -> Self {
@@ -107,13 +124,62 @@ impl NEAT {
         }
         self
     }
+}
 
-    fn compute_species(&mut self) {
+/// Speciation
+impl NEAT {
+    fn get_genome_species(&self, genome: &Genome) -> Option<usize> {
+        for i in 0..self.species.len() {
+            if self.species[i].belongs(genome) {
+                return Some(i);
+            }
+        }
+        None
+    }
+
+    /**
+    Adds the new population to the species
+    Use after creating the new population
+    */
+    fn compute_new_pop_species(&mut self) {
         for species in &mut self.species {
             species.prep_new_generation();
         }
         for i in 0..self.pop.len() {
-            
+            if let Some(index) = self.get_genome_species(&self.pop[i]) {
+                self.species[index].population.push(i as u32);
+            } else {
+                let species_id = self.get_next_genome_id();
+                let mut species = Species::new(&self.pop[i], species_id);
+                species.population.push(i as u32);
+                self.species.push(species);
+            }
+        }
+    }
+
+    /**
+    Prepares the species for the next generation.
+    This will set the adjusted fitness & the new representative genomes
+    */
+    fn prepare_species_next_gen(&mut self) {
+        for species in &mut self.species {
+            if species.population.len() == 0 {
+                continue;
+            }
+
+            let mut best_index: u32 = species.population[0];
+            let mut best_fitness: f64 = self.pop[species.population[0] as usize].fitness;
+            for individual in &species.population {
+                if best_fitness < self.pop[*individual as usize].fitness {
+                    best_index = *individual;
+                    best_fitness = self.pop[*individual as usize].fitness;
+                }
+                self.pop[*individual as usize].adj_fitness =
+                    self.pop[*individual as usize].fitness / (species.population.len() as f64);
+                species.total_shared_fitness += self.pop[*individual as usize].adj_fitness;
+            }
+
+            species.set_new_rep_genome(&self.pop[best_index as usize]);
         }
     }
 }

@@ -22,10 +22,8 @@ impl Species {
         Genome::compute_difference(&self.rep_genome, other) < unsafe { SETTINGS.max_difference }
     }
 
-    pub fn set_new_rep_genome(mut self, new_rep: &Genome) -> Self {
-        let _genome = self.rep_genome;
+    pub fn set_new_rep_genome(&mut self, new_rep: &Genome) {
         self.rep_genome = new_rep.clone();
-        self
     }
 
     pub fn prep_new_generation(&mut self) {
