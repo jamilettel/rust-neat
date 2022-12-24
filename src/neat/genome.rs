@@ -180,6 +180,7 @@ impl Genome {
                 && !self.get_network().nodes[&from]
                     .succ
                     .contains(&LinkTo { to: *ele.0 })
+                && from != *ele.0
             {
                 nb_linkable_nodes += 1;
             }
@@ -196,6 +197,7 @@ impl Genome {
                 && !self.get_network().nodes[&from]
                     .succ
                     .contains(&LinkTo { to: *ele.0 })
+                && from != *ele.0
             {
                 if pos_linkable_node == 0 {
                     return Some((from, *ele.0));
